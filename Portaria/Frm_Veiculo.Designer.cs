@@ -85,11 +85,13 @@
             // 
             // txt_NOME
             // 
+            this.txt_NOME.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
             this.txt_NOME.Font = new System.Drawing.Font("Arial Narrow", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.txt_NOME.Location = new System.Drawing.Point(78, 62);
             this.txt_NOME.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
             this.txt_NOME.Name = "txt_NOME";
-            this.txt_NOME.Size = new System.Drawing.Size(560, 26);
+            this.txt_NOME.Size = new System.Drawing.Size(378, 26);
             this.txt_NOME.TabIndex = 1;
             this.txt_NOME.TextChanged += new System.EventHandler(this.txt_NOME_TextChanged);
             // 
@@ -109,7 +111,7 @@
             this.txt_RG.Location = new System.Drawing.Point(78, 25);
             this.txt_RG.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
             this.txt_RG.Name = "txt_RG";
-            this.txt_RG.Size = new System.Drawing.Size(184, 26);
+            this.txt_RG.Size = new System.Drawing.Size(113, 26);
             this.txt_RG.TabIndex = 0;
             this.txt_RG.TextChanged += new System.EventHandler(this.txt_RG_TextChanged);
             this.txt_RG.KeyDown += new System.Windows.Forms.KeyEventHandler(this.txt_RG_KeyDown);
@@ -120,7 +122,7 @@
             this.TIPO.Location = new System.Drawing.Point(110, 60);
             this.TIPO.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
             this.TIPO.Name = "TIPO";
-            this.TIPO.Size = new System.Drawing.Size(152, 26);
+            this.TIPO.Size = new System.Drawing.Size(96, 26);
             this.TIPO.TabIndex = 1;
             this.TIPO.TextChanged += new System.EventHandler(this.textBox4_TextChanged);
             // 
@@ -130,17 +132,19 @@
             this.txt_Placa.Location = new System.Drawing.Point(110, 22);
             this.txt_Placa.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
             this.txt_Placa.Name = "txt_Placa";
-            this.txt_Placa.Size = new System.Drawing.Size(152, 26);
+            this.txt_Placa.Size = new System.Drawing.Size(96, 26);
             this.txt_Placa.TabIndex = 0;
             this.txt_Placa.TextChanged += new System.EventHandler(this.textBox5_TextChanged);
             // 
             // txt_NOME_A
             // 
+            this.txt_NOME_A.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
             this.txt_NOME_A.Font = new System.Drawing.Font("Arial Narrow", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.txt_NOME_A.Location = new System.Drawing.Point(78, 54);
             this.txt_NOME_A.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
             this.txt_NOME_A.Name = "txt_NOME_A";
-            this.txt_NOME_A.Size = new System.Drawing.Size(560, 26);
+            this.txt_NOME_A.Size = new System.Drawing.Size(381, 26);
             this.txt_NOME_A.TabIndex = 1;
             this.txt_NOME_A.TextChanged += new System.EventHandler(this.textBox6_TextChanged);
             // 
@@ -209,6 +213,8 @@
             // 
             // groupBox1
             // 
+            this.groupBox1.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
             this.groupBox1.Controls.Add(this.btn_rg);
             this.groupBox1.Controls.Add(this.txt_cel);
             this.groupBox1.Controls.Add(this.lbl_cel);
@@ -216,9 +222,9 @@
             this.groupBox1.Controls.Add(this.txt_NOME);
             this.groupBox1.Controls.Add(this.lbl_RG);
             this.groupBox1.Controls.Add(this.lbl_NOME_MOTORISTA);
-            this.groupBox1.Location = new System.Drawing.Point(12, 200);
+            this.groupBox1.Location = new System.Drawing.Point(15, 147);
             this.groupBox1.Name = "groupBox1";
-            this.groupBox1.Size = new System.Drawing.Size(644, 100);
+            this.groupBox1.Size = new System.Drawing.Size(465, 100);
             this.groupBox1.TabIndex = 2;
             this.groupBox1.TabStop = false;
             this.groupBox1.Text = "MOTORISTA";
@@ -226,7 +232,7 @@
             // btn_rg
             // 
             this.btn_rg.Font = new System.Drawing.Font("Arial Narrow", 18F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.btn_rg.Location = new System.Drawing.Point(269, 20);
+            this.btn_rg.Location = new System.Drawing.Point(197, 21);
             this.btn_rg.Name = "btn_rg";
             this.btn_rg.Size = new System.Drawing.Size(47, 35);
             this.btn_rg.TabIndex = 10;
@@ -237,9 +243,9 @@
             // txt_cel
             // 
             this.txt_cel.Font = new System.Drawing.Font("Arial Narrow", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.txt_cel.Location = new System.Drawing.Point(470, 22);
+            this.txt_cel.Location = new System.Drawing.Point(339, 29);
             this.txt_cel.Name = "txt_cel";
-            this.txt_cel.Size = new System.Drawing.Size(168, 26);
+            this.txt_cel.Size = new System.Drawing.Size(117, 26);
             this.txt_cel.TabIndex = 9;
             this.txt_cel.TextChanged += new System.EventHandler(this.textBox1_TextChanged_1);
             // 
@@ -247,7 +253,7 @@
             // 
             this.lbl_cel.AutoSize = true;
             this.lbl_cel.Font = new System.Drawing.Font("Arial Narrow", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.lbl_cel.Location = new System.Drawing.Point(380, 28);
+            this.lbl_cel.Location = new System.Drawing.Point(265, 31);
             this.lbl_cel.Name = "lbl_cel";
             this.lbl_cel.Size = new System.Drawing.Size(68, 20);
             this.lbl_cel.TabIndex = 8;
@@ -256,13 +262,15 @@
             // 
             // groupBox2
             // 
+            this.groupBox2.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
             this.groupBox2.Controls.Add(this.lbl_AJUDANTE);
             this.groupBox2.Controls.Add(this.lbl_RG2);
             this.groupBox2.Controls.Add(this.txt_RG_A);
             this.groupBox2.Controls.Add(this.txt_NOME_A);
-            this.groupBox2.Location = new System.Drawing.Point(12, 306);
+            this.groupBox2.Location = new System.Drawing.Point(15, 253);
             this.groupBox2.Name = "groupBox2";
-            this.groupBox2.Size = new System.Drawing.Size(644, 100);
+            this.groupBox2.Size = new System.Drawing.Size(468, 100);
             this.groupBox2.TabIndex = 3;
             this.groupBox2.TabStop = false;
             this.groupBox2.Text = "AJUDANTE";
@@ -274,9 +282,9 @@
             this.groupBox3.Controls.Add(this.txt_Placa);
             this.groupBox3.Controls.Add(this.TIPO);
             this.groupBox3.Controls.Add(this.lbl_TIPO_VEICULO);
-            this.groupBox3.Location = new System.Drawing.Point(12, 101);
+            this.groupBox3.Location = new System.Drawing.Point(12, 34);
             this.groupBox3.Name = "groupBox3";
-            this.groupBox3.Size = new System.Drawing.Size(322, 100);
+            this.groupBox3.Size = new System.Drawing.Size(262, 100);
             this.groupBox3.TabIndex = 1;
             this.groupBox3.TabStop = false;
             this.groupBox3.Text = "VEICULO";
@@ -285,7 +293,7 @@
             // button1
             // 
             this.button1.Font = new System.Drawing.Font("Arial Narrow", 18F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.button1.Location = new System.Drawing.Point(268, 17);
+            this.button1.Location = new System.Drawing.Point(214, 17);
             this.button1.Name = "button1";
             this.button1.Size = new System.Drawing.Size(48, 33);
             this.button1.TabIndex = 2;
@@ -302,9 +310,9 @@
             this.AGREGADO.Items.AddRange(new object[] {
             "SIM",
             "NÃO"});
-            this.AGREGADO.Location = new System.Drawing.Point(482, 150);
+            this.AGREGADO.Location = new System.Drawing.Point(391, 90);
             this.AGREGADO.Name = "AGREGADO";
-            this.AGREGADO.Size = new System.Drawing.Size(120, 44);
+            this.AGREGADO.Size = new System.Drawing.Size(72, 44);
             this.AGREGADO.TabIndex = 7;
             this.AGREGADO.SelectedIndexChanged += new System.EventHandler(this.listBox2_SelectedIndexChanged);
             // 
@@ -312,7 +320,7 @@
             // 
             this.label1.AutoSize = true;
             this.label1.Font = new System.Drawing.Font("Arial Narrow", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.label1.Location = new System.Drawing.Point(478, 114);
+            this.label1.Location = new System.Drawing.Point(387, 51);
             this.label1.Name = "label1";
             this.label1.Size = new System.Drawing.Size(84, 20);
             this.label1.TabIndex = 6;
@@ -323,7 +331,7 @@
             // 
             this.label2.AutoSize = true;
             this.label2.Font = new System.Drawing.Font("Arial Narrow", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.label2.Location = new System.Drawing.Point(352, 109);
+            this.label2.Location = new System.Drawing.Point(280, 42);
             this.label2.Name = "label2";
             this.label2.Size = new System.Drawing.Size(89, 40);
             this.label2.TabIndex = 4;
@@ -332,8 +340,9 @@
             // 
             // button2
             // 
+            this.button2.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.button2.Font = new System.Drawing.Font("Arial Narrow", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.button2.Location = new System.Drawing.Point(517, 416);
+            this.button2.Location = new System.Drawing.Point(334, 359);
             this.button2.Name = "button2";
             this.button2.Size = new System.Drawing.Size(137, 33);
             this.button2.TabIndex = 9;
@@ -349,9 +358,9 @@
             this.PRESTADOR.Items.AddRange(new object[] {
             "SIM",
             "NAO"});
-            this.PRESTADOR.Location = new System.Drawing.Point(340, 150);
+            this.PRESTADOR.Location = new System.Drawing.Point(284, 88);
             this.PRESTADOR.Name = "PRESTADOR";
-            this.PRESTADOR.Size = new System.Drawing.Size(120, 44);
+            this.PRESTADOR.Size = new System.Drawing.Size(85, 44);
             this.PRESTADOR.TabIndex = 5;
             this.PRESTADOR.SelectedIndexChanged += new System.EventHandler(this.listBox1_SelectedIndexChanged);
             // 
@@ -359,6 +368,9 @@
             // 
             dataGridViewCellStyle1.Font = new System.Drawing.Font("Arial Narrow", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.ultimas_visitas.AlternatingRowsDefaultCellStyle = dataGridViewCellStyle1;
+            this.ultimas_visitas.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
             this.ultimas_visitas.AutoSizeColumnsMode = System.Windows.Forms.DataGridViewAutoSizeColumnsMode.Fill;
             this.ultimas_visitas.CellBorderStyle = System.Windows.Forms.DataGridViewCellBorderStyle.Raised;
             this.ultimas_visitas.ColumnHeadersBorderStyle = System.Windows.Forms.DataGridViewHeaderBorderStyle.Single;
@@ -369,7 +381,7 @@
             dataGridViewCellStyle2.SelectionForeColor = System.Drawing.SystemColors.HighlightText;
             this.ultimas_visitas.ColumnHeadersDefaultCellStyle = dataGridViewCellStyle2;
             this.ultimas_visitas.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
-            this.ultimas_visitas.Location = new System.Drawing.Point(12, 455);
+            this.ultimas_visitas.Location = new System.Drawing.Point(12, 398);
             this.ultimas_visitas.Name = "ultimas_visitas";
             dataGridViewCellStyle3.BackColor = System.Drawing.SystemColors.Control;
             dataGridViewCellStyle3.Font = new System.Drawing.Font("Arial Narrow", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
@@ -377,14 +389,14 @@
             dataGridViewCellStyle3.SelectionBackColor = System.Drawing.SystemColors.Highlight;
             dataGridViewCellStyle3.SelectionForeColor = System.Drawing.SystemColors.HighlightText;
             this.ultimas_visitas.RowHeadersDefaultCellStyle = dataGridViewCellStyle3;
-            this.ultimas_visitas.Size = new System.Drawing.Size(1880, 529);
+            this.ultimas_visitas.Size = new System.Drawing.Size(1234, 286);
             this.ultimas_visitas.TabIndex = 23;
             this.ultimas_visitas.CellContentClick += new System.Windows.Forms.DataGridViewCellEventHandler(this.ultimas_visitas_CellContentClick);
             // 
             // btn_visitas
             // 
             this.btn_visitas.Font = new System.Drawing.Font("Arial Narrow", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.btn_visitas.Location = new System.Drawing.Point(12, 416);
+            this.btn_visitas.Location = new System.Drawing.Point(12, 359);
             this.btn_visitas.Name = "btn_visitas";
             this.btn_visitas.Size = new System.Drawing.Size(137, 33);
             this.btn_visitas.TabIndex = 24;
@@ -394,20 +406,24 @@
             // 
             // groupBox4
             // 
+            this.groupBox4.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
             this.groupBox4.Controls.Add(this.txt_OBS);
-            this.groupBox4.Location = new System.Drawing.Point(660, 109);
+            this.groupBox4.Location = new System.Drawing.Point(489, 40);
             this.groupBox4.Name = "groupBox4";
-            this.groupBox4.Size = new System.Drawing.Size(372, 74);
+            this.groupBox4.Size = new System.Drawing.Size(347, 74);
             this.groupBox4.TabIndex = 8;
             this.groupBox4.TabStop = false;
             this.groupBox4.Text = "EMPRESA";
             // 
             // txt_OBS
             // 
+            this.txt_OBS.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
             this.txt_OBS.Font = new System.Drawing.Font("Arial Narrow", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.txt_OBS.Location = new System.Drawing.Point(4, 43);
+            this.txt_OBS.Location = new System.Drawing.Point(6, 37);
             this.txt_OBS.Name = "txt_OBS";
-            this.txt_OBS.Size = new System.Drawing.Size(359, 26);
+            this.txt_OBS.Size = new System.Drawing.Size(332, 26);
             this.txt_OBS.TabIndex = 0;
             this.txt_OBS.TextChanged += new System.EventHandler(this.textBox1_TextChanged_2);
             // 
@@ -418,19 +434,21 @@
             // 
             // dtg_agendamento
             // 
-            this.dtg_agendamento.AutoSizeColumnsMode = System.Windows.Forms.DataGridViewAutoSizeColumnsMode.Fill;
+            this.dtg_agendamento.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.dtg_agendamento.AutoSizeColumnsMode = System.Windows.Forms.DataGridViewAutoSizeColumnsMode.ColumnHeader;
             this.dtg_agendamento.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
-            this.dtg_agendamento.Location = new System.Drawing.Point(1044, 127);
+            this.dtg_agendamento.Location = new System.Drawing.Point(839, 45);
             this.dtg_agendamento.Name = "dtg_agendamento";
-            this.dtg_agendamento.Size = new System.Drawing.Size(848, 322);
+            this.dtg_agendamento.Size = new System.Drawing.Size(407, 347);
             this.dtg_agendamento.TabIndex = 27;
             this.dtg_agendamento.CellContentClick += new System.Windows.Forms.DataGridViewCellEventHandler(this.dtg_agendamento_CellContentClick);
             // 
             // Txt_agendamento
             // 
+            this.Txt_agendamento.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.Txt_agendamento.AutoSize = true;
             this.Txt_agendamento.Font = new System.Drawing.Font("Arial Narrow", 20.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.Txt_agendamento.Location = new System.Drawing.Point(1308, 88);
+            this.Txt_agendamento.Location = new System.Drawing.Point(930, 12);
             this.Txt_agendamento.Name = "Txt_agendamento";
             this.Txt_agendamento.Size = new System.Drawing.Size(270, 31);
             this.Txt_agendamento.TabIndex = 28;
@@ -440,12 +458,13 @@
             // btn_atualizar
             // 
             this.btn_atualizar.Font = new System.Drawing.Font("Arial Narrow", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.btn_atualizar.Location = new System.Drawing.Point(1584, 88);
+            this.btn_atualizar.Location = new System.Drawing.Point(839, 14);
             this.btn_atualizar.Name = "btn_atualizar";
             this.btn_atualizar.Size = new System.Drawing.Size(85, 27);
             this.btn_atualizar.TabIndex = 29;
             this.btn_atualizar.Text = "ATUALIZAR";
             this.btn_atualizar.UseVisualStyleBackColor = true;
+            this.btn_atualizar.Visible = false;
             this.btn_atualizar.Click += new System.EventHandler(this.btn_atualizar_Click);
             // 
             // time_veiculo
@@ -456,19 +475,21 @@
             // 
             // dt_historico
             // 
+            this.dt_historico.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.dt_historico.AutoSizeColumnsMode = System.Windows.Forms.DataGridViewAutoSizeColumnsMode.Fill;
             this.dt_historico.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
-            this.dt_historico.Location = new System.Drawing.Point(660, 220);
+            this.dt_historico.Location = new System.Drawing.Point(489, 157);
             this.dt_historico.Name = "dt_historico";
-            this.dt_historico.Size = new System.Drawing.Size(372, 229);
+            this.dt_historico.Size = new System.Drawing.Size(347, 235);
             this.dt_historico.TabIndex = 30;
             this.dt_historico.CellContentClick += new System.Windows.Forms.DataGridViewCellEventHandler(this.dt_historico_CellContentClick);
             // 
             // lbl_historico
             // 
+            this.lbl_historico.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.lbl_historico.AutoSize = true;
             this.lbl_historico.Font = new System.Drawing.Font("Arial Narrow", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.lbl_historico.Location = new System.Drawing.Point(660, 194);
+            this.lbl_historico.Location = new System.Drawing.Point(719, 134);
             this.lbl_historico.Name = "lbl_historico";
             this.lbl_historico.Size = new System.Drawing.Size(117, 20);
             this.lbl_historico.TabIndex = 31;
@@ -476,8 +497,9 @@
             // 
             // att_historico
             // 
+            this.att_historico.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.att_historico.Font = new System.Drawing.Font("Arial Narrow", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.att_historico.Location = new System.Drawing.Point(939, 189);
+            this.att_historico.Location = new System.Drawing.Point(489, 124);
             this.att_historico.Name = "att_historico";
             this.att_historico.Size = new System.Drawing.Size(93, 30);
             this.att_historico.TabIndex = 32;
@@ -491,7 +513,7 @@
             this.Strip_relatorio});
             this.menuStrip1.Location = new System.Drawing.Point(0, 0);
             this.menuStrip1.Name = "menuStrip1";
-            this.menuStrip1.Size = new System.Drawing.Size(1904, 24);
+            this.menuStrip1.Size = new System.Drawing.Size(1258, 24);
             this.menuStrip1.TabIndex = 33;
             this.menuStrip1.Text = "menuStrip1";
             // 
@@ -513,16 +535,17 @@
             // 
             // Frm_Veiculo
             // 
-            this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 16F);
-            this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
+            this.AutoScaleDimensions = new System.Drawing.SizeF(96F, 96F);
+            this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Dpi;
             this.AutoScroll = true;
+            this.AutoSize = true;
             this.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
             this.BackColor = System.Drawing.SystemColors.ButtonFace;
             this.BackgroundImageLayout = System.Windows.Forms.ImageLayout.None;
-            this.ClientSize = new System.Drawing.Size(1904, 990);
+            this.ClientSize = new System.Drawing.Size(1258, 702);
+            this.Controls.Add(this.dt_historico);
             this.Controls.Add(this.att_historico);
             this.Controls.Add(this.lbl_historico);
-            this.Controls.Add(this.dt_historico);
             this.Controls.Add(this.btn_atualizar);
             this.Controls.Add(this.Txt_agendamento);
             this.Controls.Add(this.dtg_agendamento);

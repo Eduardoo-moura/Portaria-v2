@@ -69,6 +69,7 @@ namespace Portaria
             int pos = txt.SelectionStart; // salva posição do cursor
             txt.Text = txt.Text.ToUpper();
             txt.SelectionStart = pos;     // restaura a posição
+            AcceptButton = btn_rg;
 
         }
         private void txt_NOME_TextChanged(object sender, EventArgs e)
@@ -146,6 +147,7 @@ namespace Portaria
             txt.Text = txt.Text.ToUpper();
             txt.SelectionStart = pos;     // restaura a posição
             this.KeyPreview = true;
+            AcceptButton = button1;
         }
         private void listBox1_SelectedIndexChanged(object sender, EventArgs e)
         {
@@ -297,7 +299,7 @@ namespace Portaria
                             txt_NOME_A.Text = dr["NOMEAJUDANTE"].ToString();
                             TIPO.Text = dr["TIPOVEICULO"].ToString();
                             txt_OBS.Text = dr["EMPRESA"].ToString().Trim();
-
+                            
                             MessageBox.Show("Registro encontrado!");
                             att_historico.PerformClick();
                         }
@@ -385,7 +387,7 @@ namespace Portaria
 
         // Exemplo 4: Corrija o método att_historico_Click:
         private void att_historico_Click(object sender, EventArgs e)
-        {
+        {            
             string placaFiltro = txt_Placa.Text.Trim().ToUpper();
             string rgFiltro = txt_RG.Text.Trim().ToUpper();
 
@@ -408,7 +410,7 @@ namespace Portaria
                         {
                             sql = @"
                                 SELECT 
-                                    strftime('%d/%m/%Y %H:%M', DataHora) AS 'DATA / HORA'
+                                strftime('%d/%m/%Y %H:%M', DataHora) AS 'DATA / HORA'
                                 FROM Veiculo
                                 WHERE UPPER(Placa) = $placa
                                 ORDER BY DataHora DESC";
@@ -420,7 +422,7 @@ namespace Portaria
                         {
                             sql = @"
                                 SELECT 
-                                    strftime('%d/%m/%Y %H:%M', DataHora) AS 'DATA / HORA'
+                                strftime('%d/%m/%Y %H:%M', DataHora) AS 'DATA / HORA'
                                 FROM Veiculo
                                 WHERE UPPER(CPF) = $CPF
                                 ORDER BY DataHora DESC";
@@ -434,17 +436,22 @@ namespace Portaria
                         {
                             dt.Load(reader);
                         }
-
-                        dt_historico.DataSource = dt;
-                        dt_historico.ReadOnly = true;
-                        dt_historico.DefaultCellStyle.Font = new Font("Segoe UI", 12);
-                        dt_historico.ColumnHeadersDefaultCellStyle.Font =
-                            new Font("Segoe UI", 12, FontStyle.Bold);
-                        dt_historico.RowHeadersDefaultCellStyle.Font =
-                            new Font("Segoe UI", 10, FontStyle.Bold);
-
                         if (dt.Rows.Count == 0)
+                        { 
+                            dt_historico.DataSource = null;
+                            dt_historico.Columns.Clear();
+
                             MessageBox.Show("Nenhum registro encontrado.");
+                        }
+                        else
+                        {
+                            dt_historico.DataSource = dt;
+                            dt_historico.ReadOnly = true;
+                            dt_historico.DefaultCellStyle.Font = new Font("Segoe UI", 12);
+                            dt_historico.ColumnHeadersDefaultCellStyle.Font = new Font("Segoe UI", 12, FontStyle.Bold);
+                            dt_historico.RowHeadersDefaultCellStyle.Font = new Font("Segoe UI", 10, FontStyle.Bold);
+
+                        }
                     }
                 }
             }
@@ -458,6 +465,7 @@ namespace Portaria
             dt_historico.ColumnHeadersDefaultCellStyle.Font = new Font("Segoe UI", 12, FontStyle.Bold);
             dt_historico.RowHeadersDefaultCellStyle.Font = new Font("Segoe UI", 10, FontStyle.Bold);
             dt_historico.AlternatingRowsDefaultCellStyle = dt_historico.DefaultCellStyle;
+
         }
 
         private void Frm_Veiculo_Load(object sender, EventArgs e)
@@ -500,63 +508,51 @@ namespace Portaria
         // Exemplo 5: Corrija o método btn_rg_Click:
         private void btn_rg_Click(object sender, EventArgs e)
         {
-            string placaFiltro = txt_Placa.Text.Trim().ToUpper();
-            string rgFiltro = txt_RG.Text.Trim().ToUpper();
+            string placaCPF = txt_RG.Text.Trim().ToUpper();
 
-            if (string.IsNullOrEmpty(placaFiltro) && string.IsNullOrEmpty(rgFiltro))
+            using (var con = new SQLiteConnection(conexao))
             {
-                MessageBox.Show("Informe placa ou RG para pesquisa.");
-                return;
-            }
+                con.Open();
+                string sql = @"
+                    SELECT CPF, NOME, CELULAR, CPFAJUDANTE, NOMEAJUDANTE, DataHora, PLACA, TIPOVEICULO, EMPRESA
+                    FROM Veiculo
+                    WHERE @CPF = CPF
+                    ORDER BY DataHora DESC";
 
-            try
-            {
-                using (var con = new SQLiteConnection(conexao))
+                using (var cmd = new SQLiteCommand(sql, con))
                 {
-                    con.Open();
+                    cmd.Parameters.AddWithValue("@CPF", placaCPF);
 
-                    string sql;
-                    using (var cmd = new SQLiteCommand(con))
+                    using (var dr = cmd.ExecuteReader())
                     {
-                        if (!string.IsNullOrEmpty(placaFiltro))
+                        if (dr.Read())
                         {
-                            sql = @"
-                                SELECT 
-                                    strftime('%d/%m/%Y %H:%M', DataHora) AS 'DATA / HORA'
-                                FROM Veiculo
-                                WHERE UPPER(Placa) = @placa
-                                ORDER BY DataHora DESC";
+                            txt_Placa.Text = dr["PLACA"].ToString();
+                            txt_RG.Text = dr["CPF"].ToString();
+                            txt_NOME.Text = dr["NOME"].ToString();
+                            txt_cel.Text = dr["CELULAR"].ToString();
+                            txt_RG_A.Text = dr["CPFAJUDANTE"].ToString();
+                            txt_NOME_A.Text = dr["NOMEAJUDANTE"].ToString();
+                            TIPO.Text = dr["TIPOVEICULO"].ToString();
+                            txt_OBS.Text = dr["EMPRESA"].ToString().Trim();
 
-                            cmd.CommandText = sql;
-                            cmd.Parameters.AddWithValue("@placa", placaFiltro);
+                            MessageBox.Show("Registro encontrado!");
+                            att_historico.PerformClick();
                         }
                         else
                         {
-                            sql = @"
-                                SELECT 
-                                    strftime('%d/%m/%Y %H:%M', DataHora) AS 'DATA / HORA'
-                                FROM Veiculo
-                                WHERE UPPER(CPF) = @CPF
-                                ORDER BY DataHora DESC";
-
-                            cmd.CommandText = sql;
-                            cmd.Parameters.AddWithValue("@CPF", rgFiltro);
+                            MessageBox.Show("Documento não encontrado!");
+                            txt_Placa.Clear();
+                            txt_RG.Clear();
+                            txt_NOME.Clear();
+                            txt_RG_A.Clear();
+                            txt_NOME_A.Clear();
+                            txt_OBS.Clear();
+                            TIPO.Clear();
+                            txt_cel.Clear();
                         }
-
-                        DataTable dt = new DataTable();
-                        using (var reader = cmd.ExecuteReader())
-                        {
-                            dt.Load(reader);
-                        }
-
-                        dt_historico.DataSource = dt;
-                        dt_historico.ReadOnly = true;
                     }
                 }
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show("Erro: " + ex.Message);
             }
         }
 
