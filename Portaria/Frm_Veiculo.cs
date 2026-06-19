@@ -32,17 +32,9 @@ namespace Portaria
             this.MaximizeBox = true;
             this.MinimizeBox = true; // opcional
 
-            string VeiculoDb = Path.Combine(
-            AppDomain.CurrentDomain.BaseDirectory,
-            "controleAcesso.db");
+            string conexao = $"Data Source={Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "controleAcesso.db")};Version=3;";
+            string conexaoagenda = $"Data Source={Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "controleAcesso.db")};Version=3;";
 
-            string AgendamentoDb = Path.Combine(
-            AppDomain.CurrentDomain.BaseDirectory,
-            "Agendamento.db");
-
-            string Conexao = $"Data Source={VeiculoDb};Version=3;";
-
-            string Conexaoagenda = $"Data Source={AgendamentoDb};Version=3;";
 
             foreach (Control c in this.Controls)
             {
@@ -51,6 +43,7 @@ namespace Portaria
                     txt.CharacterCasing = CharacterCasing.Upper;
                 }
             }
+                       
             
         }
 
@@ -60,7 +53,28 @@ namespace Portaria
         private readonly string conexaoagenda =
         @"Data Source=ControleAcesso.db;";
 
+        public void LimparCampo()
+        {
+            txt_Placa.Clear();
+            txt_RG.Clear();
+            txt_NOME.Clear();
+            txt_RG_A.Clear();
+            txt_NOME_A.Clear();
+            txt_OBS.Clear();
+            TIPO.Clear();
+            txt_cel.Clear();
 
+            foreach (TabPage tab in Tab_Ajudantes.TabPages)
+            {
+                foreach (Control ctrl in tab.Controls)
+                {
+                    if (ctrl is TextBox txt)
+                        txt.Clear();
+                }
+            }
+        }
+        
+        
         private void txt_RG_TextChanged(object sender, EventArgs e)
         {
             string txt_RG = Console.ReadLine();
@@ -163,21 +177,31 @@ namespace Portaria
             txt.SelectionStart = pos;     // restaura a posição
             this.KeyPreview = true;
         }
-
-        // Substitua o uso de SQLiteCommand para SQLiteConnection ao abrir a conexão.
-        // Exemplo de correção para o método btn_Salvar:
-
         private void btn_Salvar(object sender, EventArgs e)
         {
+            if (string.IsNullOrWhiteSpace(txt_NOME.Text))
+            {
+                MessageBox.Show("O campo NOME é obrigatório!", "Atenção",
+                    MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                txt_NOME.Focus();
+                return;
+            }
+            if (string.IsNullOrWhiteSpace(txt_RG.Text))
+            {
+                MessageBox.Show("O campo RG ou CPF é obrigatório!", "Atenção",
+                    MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                txt_RG.Focus();
+                return;
+            }
+
             using (SQLiteConnection conn = new SQLiteConnection(conexao))
             {
                 conn.Open();
                 string sql = @"
                 INSERT INTO Veiculo
-                (CPF, NOME, CELULAR, CPFAJUDANTE, NOMEAJUDANTE, DataHora, PLACA, TIPOVEICULO, PRESTADOR, AGREGADO, EMPRESA)
+                (CPF, NOME, CELULAR, CPFAJUDANTE, NOMEAJUDANTE, DataHora, SAIDA, PLACA, TIPOVEICULO, PRESTADOR, AGREGADO, EMPRESA)
                 VALUES
-                (@CPF, @NOME, @CELULAR, @CPFAJUDANTE, @NOMEAJUDANTE, @DataHora, @PLACA, @TIPOVEICULO, @PRESTADOR, @AGREGADO, @EMPRESA)
-                 ";
+                (@CPF, @NOME, @CELULAR, @CPFAJUDANTE, @NOMEAJUDANTE, @DataHora, @SAIDA, @PLACA, @TIPOVEICULO, @PRESTADOR, @AGREGADO, @EMPRESA)";
 
                 using (var cmd = new SQLiteCommand(sql, conn))
                 {
@@ -187,40 +211,23 @@ namespace Portaria
                     cmd.Parameters.AddWithValue("@CPFAJUDANTE", txt_RG_A.Text);
                     cmd.Parameters.AddWithValue("@NOMEAJUDANTE", txt_NOME_A.Text);
                     cmd.Parameters.AddWithValue("@DataHora", DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"));
+                    cmd.Parameters.AddWithValue("@SAIDA", "");
                     cmd.Parameters.AddWithValue("@PLACA", txt_Placa.Text);
                     cmd.Parameters.AddWithValue("@TIPOVEICULO", TIPO.Text);
                     cmd.Parameters.AddWithValue("@PRESTADOR", PRESTADOR.Text);
                     cmd.Parameters.AddWithValue("@AGREGADO", AGREGADO.Text);
                     cmd.Parameters.AddWithValue("@EMPRESA", txt_OBS.Text.Trim());
-
                     cmd.ExecuteNonQuery();
                 }
 
-                if (string.IsNullOrWhiteSpace(txt_NOME.Text))
-                {
-                    MessageBox.Show("O campo NOME é obrigatório!", "Atenção",
-                        MessageBoxButtons.OK, MessageBoxIcon.Warning);
-
-                    txt_NOME.Focus();
-                    return;
-                }
-                if (string.IsNullOrWhiteSpace(txt_RG.Text))
-                {
-                    MessageBox.Show("O campo RG ou CPF é obrigatório!", "Atenção",
-                        MessageBoxButtons.OK, MessageBoxIcon.Warning);
-
-                    txt_RG.Focus();
-                    return;
-                }
-
                 MessageBox.Show("CADASTRADO!");
+                LimparCampo();
 
-                txt_RG.Clear(); txt_NOME.Clear(); txt_cel.Clear(); txt_RG_A.Clear(); txt_NOME_A.Clear(); txt_Placa.Clear(); TIPO.Clear(); txt_OBS.Clear();
+                btn_visitas.PerformClick(); // ← recarrega o DataGrid
+
             }
-        }
-        // Faça o mesmo ajuste em outros métodos que usam SQLiteCommand para abrir conexão.
-        // Exemplo para btn_visitas_Click:
 
+        }
         private void btn_visitas_Click(object sender, EventArgs e)
         {
             try
@@ -228,22 +235,28 @@ namespace Portaria
                 using (var con = new SQLiteConnection(conexao))
                 {
                     con.Open();
-
                     string sql = @"
-                     SELECT CPF, NOME, CELULAR, CPFAJUDANTE AS 'CPF AJUDANTE', NOMEAJUDANTE AS 'NOME AJUDANTE', strftime('%d/%m/%Y %H:%M', DataHora) AS 'DATA / HORA',
-                     PLACA, TIPOVEICULO AS 'TIPO VEICULO', PRESTADOR, AGREGADO, EMPRESA
-                     FROM Veiculo
-                     WHERE DATE(DataHora) = DATE('now')
-                     ORDER BY DataHora DESC";
+                    SELECT ID, CPF, NOME, CELULAR, 
+                    CPFAJUDANTE AS 'CPF AJUDANTE', 
+                    NOMEAJUDANTE AS 'NOME AJUDANTE', 
+                    strftime('%d/%m/%Y %H:%M', DataHora) AS 'ENTRADA', 
+                    SAIDA, PLACA, TIPOVEICULO AS 'TIPO VEICULO', 
+                    PRESTADOR, AGREGADO, EMPRESA
+                    FROM Veiculo
+                    WHERE DATE(DataHora) = DATE('now')
+                    ORDER BY DataHora DESC";
 
-                    // Aqui você deve usar SQLiteCommand e SQLiteDataAdapter para preencher o DataTable
                     using (var cmd = new SQLiteCommand(sql, con))
                     using (var da = new SQLiteDataAdapter(cmd))
                     {
                         DataTable dt = new DataTable();
                         da.Fill(dt);
-
                         ultimas_visitas.DataSource = dt;
+
+                        // Oculta ID somente se a coluna existir
+                        if (ultimas_visitas.Columns["ID"] != null)
+                            ultimas_visitas.Columns["ID"].Visible = false;
+
                         ultimas_visitas.ReadOnly = true;
                         ultimas_visitas.DefaultCellStyle.Font = new Font("Segoe UI", 12);
                         ultimas_visitas.ColumnHeadersDefaultCellStyle.Font = new Font("Segoe UI", 12, FontStyle.Bold);
@@ -251,26 +264,33 @@ namespace Portaria
                         ultimas_visitas.AlternatingRowsDefaultCellStyle = ultimas_visitas.DefaultCellStyle;
                         ultimas_visitas.DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleLeft;
                     }
+
+                    if (OcultarVisitas.Checked = false)
+                    {
+
+                        btn_atualizar.PerformClick();
+                        OcultarVisitas.Checked = false;
+                    }
+                    else
+                    {
+                        btn_atualizar.PerformClick();
+                        OcultarVisitas.Checked = true;
+                    }
+                                        
                 }
             }
             catch (Exception ex)
             {
                 MessageBox.Show("Erro: " + ex.Message);
             }
+
+            
+
         }
-
-
         private void ultimas_visitas_CellContentClick(object sender, DataGridViewCellEventArgs e)
         {
-
+            ultimas_visitas.SelectionMode = DataGridViewSelectionMode.FullRowSelect;
         }
-
-        // Substitua todos os usos incorretos de "new SQLiteCommand(conexao)" por "new SQLiteConnection(conexao)"
-        // e ajuste o uso de comandos conforme necessário.
-
-        // Exemplo 1: btn_Salvar, btn_visitas_Click já estão corretos.
-
-        // Exemplo 2: Corrija o método button1_Click:
         private void button1_Click(object sender, EventArgs e)
         {
             string placaProcurada = txt_Placa.Text.Trim().ToUpper();
@@ -279,7 +299,7 @@ namespace Portaria
             {
                 con.Open();
                 string sql = @"
-                    SELECT CPF, NOME, CELULAR, CPFAJUDANTE, NOMEAJUDANTE, DataHora, PLACA, TIPOVEICULO, EMPRESA
+                    SELECT ID, CPF, NOME, CELULAR, CPFAJUDANTE, NOMEAJUDANTE, DataHora, PLACA, TIPOVEICULO, EMPRESA
                     FROM Veiculo
                     WHERE PLACA = @PLACA
                     ORDER BY DataHora DESC";
@@ -299,37 +319,27 @@ namespace Portaria
                             txt_NOME_A.Text = dr["NOMEAJUDANTE"].ToString();
                             TIPO.Text = dr["TIPOVEICULO"].ToString();
                             txt_OBS.Text = dr["EMPRESA"].ToString().Trim();
-                            
+
                             MessageBox.Show("Registro encontrado!");
                             att_historico.PerformClick();
                         }
                         else
                         {
                             MessageBox.Show("Placa não encontrada!");
-                            txt_RG.Clear();
-                            txt_NOME.Clear();
-                            txt_RG_A.Clear();
-                            txt_NOME_A.Clear();
-                            txt_OBS.Clear();
-                            TIPO.Clear();
-                            txt_cel.Clear();
+                            LimparCampo();
                         }
                     }
                 }
             }
         }
-
         private void label3_Click(object sender, EventArgs e)
         {
 
         }
-
         private void dtg_agendamento_CellContentClick(object sender, DataGridViewCellEventArgs e)
         {
 
         }
-
-        // Exemplo 3: Corrija o método btn_atualizar_Click:
         private void btn_atualizar_Click(object sender, EventArgs e)
         {
             string conexaoagenda = @"Data Source=ControleAcesso.db";
@@ -341,8 +351,8 @@ namespace Portaria
             SELECT USUARIO, NOME, EMPRESA,
             strftime('%d/%m/%Y %H:%M', DATAHORA) AS DATAHORA
             FROM AGENDAMENTO
-            WHERE DataHora BETWEEN $inicio AND $fim
-            ORDER BY DataHora DESC";
+            WHERE datetime(DATAHORA) BETWEEN datetime($inicio) AND datetime($fim)
+            ORDER BY DATAHORA DESC";
 
             using (var conn = new SQLiteConnection(conexaoagenda))
             {
@@ -371,8 +381,6 @@ namespace Portaria
             dtg_agendamento.RowHeadersDefaultCellStyle.Font = new Font("Segoe UI", 10, FontStyle.Bold);
             dtg_agendamento.AlternatingRowsDefaultCellStyle = dtg_agendamento.DefaultCellStyle;
         }
-
-
         private void time_veiculo_Tick(object sender, EventArgs e)
         {
             btn_visitas.PerformClick(); // auto-clique
@@ -387,13 +395,13 @@ namespace Portaria
 
         // Exemplo 4: Corrija o método att_historico_Click:
         private void att_historico_Click(object sender, EventArgs e)
-        {            
+        {
             string placaFiltro = txt_Placa.Text.Trim().ToUpper();
             string rgFiltro = txt_RG.Text.Trim().ToUpper();
 
             if (string.IsNullOrEmpty(placaFiltro) && string.IsNullOrEmpty(rgFiltro))
             {
-                MessageBox.Show("Informe placa ou RG para pesquisa.");
+                MessageBox.Show("Informe placa ou documento para pesquisa.");
                 return;
             }
 
@@ -410,7 +418,7 @@ namespace Portaria
                         {
                             sql = @"
                                 SELECT 
-                                strftime('%d/%m/%Y %H:%M', DataHora) AS 'DATA / HORA'
+                                strftime('%d/%m/%Y %H:%M', DataHora) AS 'ENTRADA', SAIDA
                                 FROM Veiculo
                                 WHERE UPPER(Placa) = $placa
                                 ORDER BY DataHora DESC";
@@ -422,7 +430,7 @@ namespace Portaria
                         {
                             sql = @"
                                 SELECT 
-                                strftime('%d/%m/%Y %H:%M', DataHora) AS 'DATA / HORA'
+                                strftime('%d/%m/%Y %H:%M', DataHora) AS 'ENTRADA', SAIDA
                                 FROM Veiculo
                                 WHERE UPPER(CPF) = $CPF
                                 ORDER BY DataHora DESC";
@@ -437,7 +445,7 @@ namespace Portaria
                             dt.Load(reader);
                         }
                         if (dt.Rows.Count == 0)
-                        { 
+                        {
                             dt_historico.DataSource = null;
                             dt_historico.Columns.Clear();
 
@@ -475,13 +483,13 @@ namespace Portaria
 
         private void Relatorio_data_Click(object sender, EventArgs e)
         {
-        Frm_relatorio_data f = new Frm_relatorio_data();
-        f.ShowDialog();
+            Frm_relatorio_data f = new Frm_relatorio_data();
+            f.ShowDialog();
         }
 
         private void Strip_relatorio_Click(object sender, EventArgs e)
         {
-            
+
         }
 
         private void label3_Click_1(object sender, EventArgs e)
@@ -514,7 +522,7 @@ namespace Portaria
             {
                 con.Open();
                 string sql = @"
-                    SELECT CPF, NOME, CELULAR, CPFAJUDANTE, NOMEAJUDANTE, DataHora, PLACA, TIPOVEICULO, EMPRESA
+                    SELECT ID ,CPF, NOME, CELULAR, CPFAJUDANTE, NOMEAJUDANTE, DataHora, PLACA, TIPOVEICULO, EMPRESA
                     FROM Veiculo
                     WHERE @CPF = CPF
                     ORDER BY DataHora DESC";
@@ -542,14 +550,7 @@ namespace Portaria
                         else
                         {
                             MessageBox.Show("Documento não encontrado!");
-                            txt_Placa.Clear();
-                            txt_RG.Clear();
-                            txt_NOME.Clear();
-                            txt_RG_A.Clear();
-                            txt_NOME_A.Clear();
-                            txt_OBS.Clear();
-                            TIPO.Clear();
-                            txt_cel.Clear();
+                            LimparCampo();
                         }
                     }
                 }
@@ -567,5 +568,218 @@ namespace Portaria
             txt.SelectionStart = pos;     // restaura a posição
             this.KeyPreview = true;
         }
+
+        private void lbl_RG2_Click(object sender, EventArgs e)
+        {
+
+        }
+
+        private void Tab_Ajudante1_Click(object sender, EventArgs e)
+        {
+
+        }
+
+        private void label4_Click(object sender, EventArgs e)
+        {
+
+        }
+        private int contador = 2;
+
+        private void Btn_AbaAjudante_Click(object sender, EventArgs e)
+        {
+            List<int> numeros = new List<int>();
+
+            foreach (TabPage tab in Tab_Ajudantes.TabPages)
+            {
+                string nome = tab.Text.Replace("AJUDANTE ", "");
+                if (int.TryParse(nome, out int n))
+                    numeros.Add(n);
+            }
+
+            int i = 1;
+            while (numeros.Contains(i))
+                i++;
+
+            TabPage novaAba = new TabPage($"AJUDANTE {i}");
+
+            // === LABEL RG/CPF ===
+            Label lblRg = new Label();
+            lblRg.Text = "RG / CPF";
+            lblRg.Location = new Point(5, 10);
+            lblRg.AutoSize = true;
+
+            // === TEXTBOX RG/CPF (mesmo tamanho do Ajudante 1) ===
+            TextBox txtRg = new TextBox();
+            txtRg.Name = $"txtRgAjudante{i}";
+            txtRg.Location = new Point(70, 5);
+            txtRg.Size = new Size(200, 50);  // ← ajuste conforme o real
+            txtRg.CharacterCasing = CharacterCasing.Upper;
+
+            // === LABEL NOME ===
+            Label lblNome = new Label();
+            lblNome.Text = "NOME";
+            lblNome.Location = new Point(10, 40);
+            lblNome.AutoSize = true;
+
+            // === TEXTBOX NOME (mesmo tamanho do Ajudante 1) ===
+            TextBox txtNome = new TextBox();
+            txtNome.Name = $"txtNomeAjudante{i}";
+            txtNome.Location = new Point(70, 40);
+            txtNome.Size = new Size(600, 50);  // ← ajuste conforme o real
+            txtNome.CharacterCasing = CharacterCasing.Upper;
+
+            novaAba.Controls.Add(lblRg);
+            novaAba.Controls.Add(txtRg);
+            novaAba.Controls.Add(lblNome);
+            novaAba.Controls.Add(txtNome);
+
+            Tab_Ajudantes.TabPages.Add(novaAba);
+            Tab_Ajudantes.SelectedTab = novaAba;
+
+            contador = i + 1;
+
+        }
+
+        private void FecharAjudante_Click(object sender, EventArgs e)
+        {
+            // Corrija o acesso: Tab_Ajudante1 é um TabPage, não um TabControl.
+            // Para remover uma aba, você deve acessar o TabControl (por exemplo, Tab_Ajudantes).
+            // Verifique se há mais de uma aba antes de remover.
+            if (Tab_Ajudantes.TabPages.Count > 1)
+            {
+                Tab_Ajudantes.TabPages.RemoveAt(Tab_Ajudantes.TabPages.Count - 1);
+            }
+        }
+
+        private void Btn_Saida_Click(object sender, EventArgs e)
+        {
+            if (ultimas_visitas.SelectedRows.Count == 0)
+            {
+                MessageBox.Show("Selecione uma linha!", "Aviso",
+                    MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return;
+            }
+
+            var id = ultimas_visitas.SelectedRows[0].Cells["ID"].Value;
+
+            if (id == null)
+            {
+                MessageBox.Show("Registro válido!", "Aviso",
+                    MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return;
+            }
+
+            var confirma = MessageBox.Show("Confirmar saída?", "Confirmação",
+                MessageBoxButtons.YesNo, MessageBoxIcon.Question);
+
+            if (confirma != DialogResult.Yes) return;
+
+            try
+            {
+                string dataHoraAtual = DateTime.Now.ToString("dd/MM/yyyy HH:mm:ss");
+
+                using (var con = new SQLiteConnection(conexao))
+                {
+                    con.Open();
+                    string sql = "UPDATE Veiculo SET SAIDA = @saida WHERE ID = @id";
+
+                    using (var cmd = new SQLiteCommand(sql, con))
+                    {
+                        cmd.Parameters.AddWithValue("@saida", dataHoraAtual);
+                        cmd.Parameters.AddWithValue("@id", id);
+                        cmd.ExecuteNonQuery();
+                    }
+                }
+
+                MessageBox.Show("Saída registrada!", "Sucesso",
+                    MessageBoxButtons.OK, MessageBoxIcon.Information);
+
+                btn_visitas.PerformClick(); // ← recarrega o DataGrid
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Erro: " + ex.Message, "Erro",
+                    MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+        }
+
+        private void ultimas_visitas_CellContentClick()
+        {
+            throw new NotImplementedException();
+        }
+
+        private void Btn_CriarID_Click_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                using (var con = new SQLiteConnection(conexao))
+                {
+                    con.Open();
+
+                    // 1. Cria tabela nova com ID
+                    var sql1 = new SQLiteCommand(@"
+                    CREATE TABLE IF NOT EXISTS Veiculo_Nova (
+                    ID           INTEGER PRIMARY KEY AUTOINCREMENT,
+                    CPF          TEXT,
+                    NOME         TEXT,
+                    CELULAR      TEXT,
+                    CPFAJUDANTE  TEXT,
+                    NOMEAJUDANTE TEXT,
+                    DataHora     TEXT,
+                    SAIDA        TEXT,
+                    PLACA        TEXT,
+                    TIPOVEICULO  TEXT,
+                    PRESTADOR    TEXT,
+                    AGREGADO     TEXT,
+                    EMPRESA      TEXT
+                     )", con);
+                    sql1.ExecuteNonQuery();
+
+                    // 2. Copia dados antigos
+                    var sql2 = new SQLiteCommand(@"
+                    INSERT INTO Veiculo_Nova 
+                    (CPF, NOME, CELULAR, CPFAJUDANTE, NOMEAJUDANTE, DataHora, SAIDA, PLACA, TIPOVEICULO, PRESTADOR, AGREGADO, EMPRESA)
+                    SELECT CPF, NOME, CELULAR, CPFAJUDANTE, NOMEAJUDANTE, DataHora, SAIDA, PLACA, TIPOVEICULO, PRESTADOR, AGREGADO, EMPRESA
+                    FROM Veiculo", con);
+                    sql2.ExecuteNonQuery();
+
+                    // 3. Remove tabela antiga
+                    var sql3 = new SQLiteCommand("DROP TABLE Veiculo", con);
+                    sql3.ExecuteNonQuery();
+
+                    // 4. Renomeia
+                    var sql4 = new SQLiteCommand("ALTER TABLE Veiculo_Nova RENAME TO Veiculo", con);
+                    sql4.ExecuteNonQuery();
+
+                    MessageBox.Show("Coluna ID criada com sucesso!", "OK",
+                        MessageBoxButtons.OK, MessageBoxIcon.Information);
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Erro: " + ex.Message);
+            }
+
+        }
+
+        private void OcultarVisitas_CheckedChanged(object sender, EventArgs e)
+        {
+            var dt = (DataTable)ultimas_visitas.DataSource;
+
+            if (OcultarVisitas.Checked)
+            {
+                dt.DefaultView.RowFilter = "SAIDA IS NULL OR SAIDA = ''";
+            }
+            else
+            {
+                dt.DefaultView.RowFilter = null;
+            }
+        }
+
+        private void menuStrip1_ItemClicked(object sender, ToolStripItemClickedEventArgs e)
+        {
+
+        }
     }
 }
+

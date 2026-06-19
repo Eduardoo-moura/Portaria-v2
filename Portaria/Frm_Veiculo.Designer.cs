@@ -34,22 +34,17 @@
             System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle3 = new System.Windows.Forms.DataGridViewCellStyle();
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(Frm_Veiculo));
             this.txt_NOME = new System.Windows.Forms.TextBox();
-            this.txt_RG_A = new System.Windows.Forms.TextBox();
             this.txt_RG = new System.Windows.Forms.TextBox();
             this.TIPO = new System.Windows.Forms.TextBox();
             this.txt_Placa = new System.Windows.Forms.TextBox();
-            this.txt_NOME_A = new System.Windows.Forms.TextBox();
             this.lbl_RG = new System.Windows.Forms.Label();
             this.lbl_NOME_MOTORISTA = new System.Windows.Forms.Label();
-            this.lbl_RG2 = new System.Windows.Forms.Label();
-            this.lbl_AJUDANTE = new System.Windows.Forms.Label();
             this.lbl_PLACA = new System.Windows.Forms.Label();
             this.lbl_TIPO_VEICULO = new System.Windows.Forms.Label();
             this.groupBox1 = new System.Windows.Forms.GroupBox();
             this.btn_rg = new System.Windows.Forms.Button();
             this.txt_cel = new System.Windows.Forms.TextBox();
             this.lbl_cel = new System.Windows.Forms.Label();
-            this.groupBox2 = new System.Windows.Forms.GroupBox();
             this.groupBox3 = new System.Windows.Forms.GroupBox();
             this.button1 = new System.Windows.Forms.Button();
             this.AGREGADO = new System.Windows.Forms.ListBox();
@@ -72,8 +67,17 @@
             this.menuStrip1 = new System.Windows.Forms.MenuStrip();
             this.Strip_relatorio = new System.Windows.Forms.ToolStripMenuItem();
             this.Relatorio_data = new System.Windows.Forms.ToolStripMenuItem();
+            this.txt_NOME_A = new System.Windows.Forms.TextBox();
+            this.txt_RG_A = new System.Windows.Forms.TextBox();
+            this.lbl_RG2 = new System.Windows.Forms.Label();
+            this.lbl_AJUDANTE = new System.Windows.Forms.Label();
+            this.Tab_Ajudantes = new System.Windows.Forms.TabControl();
+            this.Tab_Ajudante1 = new System.Windows.Forms.TabPage();
+            this.Btn_AbaAjudante = new System.Windows.Forms.Button();
+            this.FecharAjudante = new System.Windows.Forms.Button();
+            this.Btn_Saida = new System.Windows.Forms.Button();
+            this.OcultarVisitas = new System.Windows.Forms.CheckBox();
             this.groupBox1.SuspendLayout();
-            this.groupBox2.SuspendLayout();
             this.groupBox3.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.ultimas_visitas)).BeginInit();
             this.groupBox4.SuspendLayout();
@@ -81,6 +85,8 @@
             ((System.ComponentModel.ISupportInitialize)(this.dtg_agendamento)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.dt_historico)).BeginInit();
             this.menuStrip1.SuspendLayout();
+            this.Tab_Ajudantes.SuspendLayout();
+            this.Tab_Ajudante1.SuspendLayout();
             this.SuspendLayout();
             // 
             // txt_NOME
@@ -95,23 +101,13 @@
             this.txt_NOME.TabIndex = 1;
             this.txt_NOME.TextChanged += new System.EventHandler(this.txt_NOME_TextChanged);
             // 
-            // txt_RG_A
-            // 
-            this.txt_RG_A.Font = new System.Drawing.Font("Arial Narrow", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.txt_RG_A.Location = new System.Drawing.Point(78, 22);
-            this.txt_RG_A.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
-            this.txt_RG_A.Name = "txt_RG_A";
-            this.txt_RG_A.Size = new System.Drawing.Size(140, 26);
-            this.txt_RG_A.TabIndex = 0;
-            this.txt_RG_A.TextChanged += new System.EventHandler(this.textBox2_TextChanged);
-            // 
             // txt_RG
             // 
             this.txt_RG.Font = new System.Drawing.Font("Arial Narrow", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.txt_RG.Location = new System.Drawing.Point(78, 25);
             this.txt_RG.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
             this.txt_RG.Name = "txt_RG";
-            this.txt_RG.Size = new System.Drawing.Size(113, 26);
+            this.txt_RG.Size = new System.Drawing.Size(103, 26);
             this.txt_RG.TabIndex = 0;
             this.txt_RG.TextChanged += new System.EventHandler(this.txt_RG_TextChanged);
             this.txt_RG.KeyDown += new System.Windows.Forms.KeyEventHandler(this.txt_RG_KeyDown);
@@ -122,7 +118,7 @@
             this.TIPO.Location = new System.Drawing.Point(110, 60);
             this.TIPO.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
             this.TIPO.Name = "TIPO";
-            this.TIPO.Size = new System.Drawing.Size(96, 26);
+            this.TIPO.Size = new System.Drawing.Size(120, 26);
             this.TIPO.TabIndex = 1;
             this.TIPO.TextChanged += new System.EventHandler(this.textBox4_TextChanged);
             // 
@@ -132,21 +128,9 @@
             this.txt_Placa.Location = new System.Drawing.Point(110, 22);
             this.txt_Placa.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
             this.txt_Placa.Name = "txt_Placa";
-            this.txt_Placa.Size = new System.Drawing.Size(96, 26);
+            this.txt_Placa.Size = new System.Drawing.Size(66, 26);
             this.txt_Placa.TabIndex = 0;
             this.txt_Placa.TextChanged += new System.EventHandler(this.textBox5_TextChanged);
-            // 
-            // txt_NOME_A
-            // 
-            this.txt_NOME_A.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
-            this.txt_NOME_A.Font = new System.Drawing.Font("Arial Narrow", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.txt_NOME_A.Location = new System.Drawing.Point(78, 54);
-            this.txt_NOME_A.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
-            this.txt_NOME_A.Name = "txt_NOME_A";
-            this.txt_NOME_A.Size = new System.Drawing.Size(381, 26);
-            this.txt_NOME_A.TabIndex = 1;
-            this.txt_NOME_A.TextChanged += new System.EventHandler(this.textBox6_TextChanged);
             // 
             // lbl_RG
             // 
@@ -169,26 +153,6 @@
             this.lbl_NOME_MOTORISTA.TabIndex = 7;
             this.lbl_NOME_MOTORISTA.Text = "NOME";
             this.lbl_NOME_MOTORISTA.Click += new System.EventHandler(this.label2_Click);
-            // 
-            // lbl_RG2
-            // 
-            this.lbl_RG2.AutoSize = true;
-            this.lbl_RG2.Font = new System.Drawing.Font("Arial Narrow", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.lbl_RG2.Location = new System.Drawing.Point(6, 28);
-            this.lbl_RG2.Name = "lbl_RG2";
-            this.lbl_RG2.Size = new System.Drawing.Size(66, 20);
-            this.lbl_RG2.TabIndex = 8;
-            this.lbl_RG2.Text = "RG / CPF";
-            // 
-            // lbl_AJUDANTE
-            // 
-            this.lbl_AJUDANTE.AutoSize = true;
-            this.lbl_AJUDANTE.Font = new System.Drawing.Font("Arial Narrow", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.lbl_AJUDANTE.Location = new System.Drawing.Point(6, 60);
-            this.lbl_AJUDANTE.Name = "lbl_AJUDANTE";
-            this.lbl_AJUDANTE.Size = new System.Drawing.Size(48, 20);
-            this.lbl_AJUDANTE.TabIndex = 9;
-            this.lbl_AJUDANTE.Text = "NOME";
             // 
             // lbl_PLACA
             // 
@@ -232,7 +196,7 @@
             // btn_rg
             // 
             this.btn_rg.Font = new System.Drawing.Font("Arial Narrow", 18F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.btn_rg.Location = new System.Drawing.Point(197, 21);
+            this.btn_rg.Location = new System.Drawing.Point(187, 18);
             this.btn_rg.Name = "btn_rg";
             this.btn_rg.Size = new System.Drawing.Size(47, 35);
             this.btn_rg.TabIndex = 10;
@@ -253,27 +217,12 @@
             // 
             this.lbl_cel.AutoSize = true;
             this.lbl_cel.Font = new System.Drawing.Font("Arial Narrow", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.lbl_cel.Location = new System.Drawing.Point(265, 31);
+            this.lbl_cel.Location = new System.Drawing.Point(265, 33);
             this.lbl_cel.Name = "lbl_cel";
             this.lbl_cel.Size = new System.Drawing.Size(68, 20);
             this.lbl_cel.TabIndex = 8;
             this.lbl_cel.Text = "CELULAR";
             this.lbl_cel.Click += new System.EventHandler(this.label3_Click_1);
-            // 
-            // groupBox2
-            // 
-            this.groupBox2.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
-            this.groupBox2.Controls.Add(this.lbl_AJUDANTE);
-            this.groupBox2.Controls.Add(this.lbl_RG2);
-            this.groupBox2.Controls.Add(this.txt_RG_A);
-            this.groupBox2.Controls.Add(this.txt_NOME_A);
-            this.groupBox2.Location = new System.Drawing.Point(15, 253);
-            this.groupBox2.Name = "groupBox2";
-            this.groupBox2.Size = new System.Drawing.Size(468, 100);
-            this.groupBox2.TabIndex = 3;
-            this.groupBox2.TabStop = false;
-            this.groupBox2.Text = "AJUDANTE";
             // 
             // groupBox3
             // 
@@ -284,7 +233,7 @@
             this.groupBox3.Controls.Add(this.lbl_TIPO_VEICULO);
             this.groupBox3.Location = new System.Drawing.Point(12, 34);
             this.groupBox3.Name = "groupBox3";
-            this.groupBox3.Size = new System.Drawing.Size(262, 100);
+            this.groupBox3.Size = new System.Drawing.Size(237, 100);
             this.groupBox3.TabIndex = 1;
             this.groupBox3.TabStop = false;
             this.groupBox3.Text = "VEICULO";
@@ -293,7 +242,7 @@
             // button1
             // 
             this.button1.Font = new System.Drawing.Font("Arial Narrow", 18F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.button1.Location = new System.Drawing.Point(214, 17);
+            this.button1.Location = new System.Drawing.Point(182, 21);
             this.button1.Name = "button1";
             this.button1.Size = new System.Drawing.Size(48, 33);
             this.button1.TabIndex = 2;
@@ -340,9 +289,8 @@
             // 
             // button2
             // 
-            this.button2.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.button2.Font = new System.Drawing.Font("Arial Narrow", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.button2.Location = new System.Drawing.Point(334, 359);
+            this.button2.Location = new System.Drawing.Point(155, 359);
             this.button2.Name = "button2";
             this.button2.Size = new System.Drawing.Size(137, 33);
             this.button2.TabIndex = 9;
@@ -372,6 +320,7 @@
             | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
             this.ultimas_visitas.AutoSizeColumnsMode = System.Windows.Forms.DataGridViewAutoSizeColumnsMode.Fill;
+            this.ultimas_visitas.AutoSizeRowsMode = System.Windows.Forms.DataGridViewAutoSizeRowsMode.AllCells;
             this.ultimas_visitas.CellBorderStyle = System.Windows.Forms.DataGridViewCellBorderStyle.Raised;
             this.ultimas_visitas.ColumnHeadersBorderStyle = System.Windows.Forms.DataGridViewHeaderBorderStyle.Single;
             dataGridViewCellStyle2.BackColor = System.Drawing.SystemColors.Control;
@@ -469,7 +418,6 @@
             // 
             // time_veiculo
             // 
-            this.time_veiculo.Enabled = true;
             this.time_veiculo.Interval = 5000;
             this.time_veiculo.Tick += new System.EventHandler(this.time_veiculo_Tick);
             // 
@@ -516,22 +464,145 @@
             this.menuStrip1.Size = new System.Drawing.Size(1258, 24);
             this.menuStrip1.TabIndex = 33;
             this.menuStrip1.Text = "menuStrip1";
+            this.menuStrip1.ItemClicked += new System.Windows.Forms.ToolStripItemClickedEventHandler(this.menuStrip1_ItemClicked);
             // 
             // Strip_relatorio
             // 
             this.Strip_relatorio.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.Relatorio_data});
             this.Strip_relatorio.Name = "Strip_relatorio";
-            this.Strip_relatorio.Size = new System.Drawing.Size(78, 20);
+            this.Strip_relatorio.Size = new System.Drawing.Size(79, 20);
             this.Strip_relatorio.Text = "RELATORIO";
             this.Strip_relatorio.Click += new System.EventHandler(this.Strip_relatorio_Click);
             // 
             // Relatorio_data
             // 
             this.Relatorio_data.Name = "Relatorio_data";
-            this.Relatorio_data.Size = new System.Drawing.Size(190, 22);
+            this.Relatorio_data.Size = new System.Drawing.Size(192, 22);
             this.Relatorio_data.Text = "RELATORIO POR DATA";
             this.Relatorio_data.Click += new System.EventHandler(this.Relatorio_data_Click);
+            // 
+            // txt_NOME_A
+            // 
+            this.txt_NOME_A.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.txt_NOME_A.Font = new System.Drawing.Font("Arial Narrow", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.txt_NOME_A.Location = new System.Drawing.Point(77, 39);
+            this.txt_NOME_A.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
+            this.txt_NOME_A.Name = "txt_NOME_A";
+            this.txt_NOME_A.Size = new System.Drawing.Size(316, 26);
+            this.txt_NOME_A.TabIndex = 1;
+            this.txt_NOME_A.TextChanged += new System.EventHandler(this.textBox6_TextChanged);
+            // 
+            // txt_RG_A
+            // 
+            this.txt_RG_A.Font = new System.Drawing.Font("Arial Narrow", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.txt_RG_A.Location = new System.Drawing.Point(78, 4);
+            this.txt_RG_A.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
+            this.txt_RG_A.Name = "txt_RG_A";
+            this.txt_RG_A.Size = new System.Drawing.Size(102, 26);
+            this.txt_RG_A.TabIndex = 0;
+            this.txt_RG_A.TextChanged += new System.EventHandler(this.textBox2_TextChanged);
+            // 
+            // lbl_RG2
+            // 
+            this.lbl_RG2.AutoSize = true;
+            this.lbl_RG2.Font = new System.Drawing.Font("Arial Narrow", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.lbl_RG2.Location = new System.Drawing.Point(3, 10);
+            this.lbl_RG2.Name = "lbl_RG2";
+            this.lbl_RG2.Size = new System.Drawing.Size(66, 20);
+            this.lbl_RG2.TabIndex = 8;
+            this.lbl_RG2.Text = "RG / CPF";
+            this.lbl_RG2.Click += new System.EventHandler(this.lbl_RG2_Click);
+            // 
+            // lbl_AJUDANTE
+            // 
+            this.lbl_AJUDANTE.AutoSize = true;
+            this.lbl_AJUDANTE.Font = new System.Drawing.Font("Arial Narrow", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.lbl_AJUDANTE.Location = new System.Drawing.Point(6, 42);
+            this.lbl_AJUDANTE.Name = "lbl_AJUDANTE";
+            this.lbl_AJUDANTE.Size = new System.Drawing.Size(48, 20);
+            this.lbl_AJUDANTE.TabIndex = 9;
+            this.lbl_AJUDANTE.Text = "NOME";
+            // 
+            // Tab_Ajudantes
+            // 
+            this.Tab_Ajudantes.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.Tab_Ajudantes.Controls.Add(this.Tab_Ajudante1);
+            this.Tab_Ajudantes.Font = new System.Drawing.Font("Arial Narrow", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.Tab_Ajudantes.Location = new System.Drawing.Point(12, 253);
+            this.Tab_Ajudantes.Name = "Tab_Ajudantes";
+            this.Tab_Ajudantes.SelectedIndex = 0;
+            this.Tab_Ajudantes.Size = new System.Drawing.Size(405, 100);
+            this.Tab_Ajudantes.TabIndex = 34;
+            // 
+            // Tab_Ajudante1
+            // 
+            this.Tab_Ajudante1.Controls.Add(this.lbl_AJUDANTE);
+            this.Tab_Ajudante1.Controls.Add(this.txt_RG_A);
+            this.Tab_Ajudante1.Controls.Add(this.lbl_RG2);
+            this.Tab_Ajudante1.Controls.Add(this.txt_NOME_A);
+            this.Tab_Ajudante1.Font = new System.Drawing.Font("Arial Narrow", 24F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.Tab_Ajudante1.Location = new System.Drawing.Point(4, 29);
+            this.Tab_Ajudante1.Name = "Tab_Ajudante1";
+            this.Tab_Ajudante1.Padding = new System.Windows.Forms.Padding(3);
+            this.Tab_Ajudante1.Size = new System.Drawing.Size(397, 67);
+            this.Tab_Ajudante1.TabIndex = 0;
+            this.Tab_Ajudante1.Text = "AJUDANTE 1";
+            this.Tab_Ajudante1.UseVisualStyleBackColor = true;
+            this.Tab_Ajudante1.Click += new System.EventHandler(this.Tab_Ajudante1_Click);
+            // 
+            // Btn_AbaAjudante
+            // 
+            this.Btn_AbaAjudante.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.Btn_AbaAjudante.Font = new System.Drawing.Font("Arial Rounded MT Bold", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.Btn_AbaAjudante.Location = new System.Drawing.Point(414, 252);
+            this.Btn_AbaAjudante.Name = "Btn_AbaAjudante";
+            this.Btn_AbaAjudante.Size = new System.Drawing.Size(30, 29);
+            this.Btn_AbaAjudante.TabIndex = 35;
+            this.Btn_AbaAjudante.Text = "+";
+            this.Btn_AbaAjudante.UseVisualStyleBackColor = true;
+            this.Btn_AbaAjudante.Click += new System.EventHandler(this.Btn_AbaAjudante_Click);
+            // 
+            // FecharAjudante
+            // 
+            this.FecharAjudante.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.FecharAjudante.Font = new System.Drawing.Font("Arial Rounded MT Bold", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.FecharAjudante.Location = new System.Drawing.Point(450, 253);
+            this.FecharAjudante.Name = "FecharAjudante";
+            this.FecharAjudante.Size = new System.Drawing.Size(30, 28);
+            this.FecharAjudante.TabIndex = 36;
+            this.FecharAjudante.Text = "X";
+            this.FecharAjudante.UseVisualStyleBackColor = true;
+            this.FecharAjudante.Click += new System.EventHandler(this.FecharAjudante_Click);
+            // 
+            // Btn_Saida
+            // 
+            this.Btn_Saida.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.Btn_Saida.Font = new System.Drawing.Font("Arial Narrow", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.Btn_Saida.Location = new System.Drawing.Point(382, 359);
+            this.Btn_Saida.Name = "Btn_Saida";
+            this.Btn_Saida.Size = new System.Drawing.Size(101, 33);
+            this.Btn_Saida.TabIndex = 37;
+            this.Btn_Saida.Text = "SAÍDA";
+            this.Btn_Saida.UseVisualStyleBackColor = true;
+            this.Btn_Saida.Click += new System.EventHandler(this.Btn_Saida_Click);
+            // 
+            // OcultarVisitas
+            // 
+            this.OcultarVisitas.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.OcultarVisitas.AutoSize = true;
+            this.OcultarVisitas.Checked = true;
+            this.OcultarVisitas.CheckState = System.Windows.Forms.CheckState.Checked;
+            this.OcultarVisitas.Location = new System.Drawing.Point(298, 356);
+            this.OcultarVisitas.Name = "OcultarVisitas";
+            this.OcultarVisitas.Size = new System.Drawing.Size(81, 36);
+            this.OcultarVisitas.TabIndex = 38;
+            this.OcultarVisitas.Text = "OCULTAR \r\nSAIDAS";
+            this.OcultarVisitas.UseVisualStyleBackColor = true;
+            this.OcultarVisitas.CheckedChanged += new System.EventHandler(this.OcultarVisitas_CheckedChanged);
             // 
             // Frm_Veiculo
             // 
@@ -543,6 +614,10 @@
             this.BackColor = System.Drawing.SystemColors.ButtonFace;
             this.BackgroundImageLayout = System.Windows.Forms.ImageLayout.None;
             this.ClientSize = new System.Drawing.Size(1258, 702);
+            this.Controls.Add(this.OcultarVisitas);
+            this.Controls.Add(this.Btn_Saida);
+            this.Controls.Add(this.FecharAjudante);
+            this.Controls.Add(this.Btn_AbaAjudante);
             this.Controls.Add(this.dt_historico);
             this.Controls.Add(this.att_historico);
             this.Controls.Add(this.lbl_historico);
@@ -558,9 +633,9 @@
             this.Controls.Add(this.AGREGADO);
             this.Controls.Add(this.PRESTADOR);
             this.Controls.Add(this.groupBox3);
-            this.Controls.Add(this.groupBox2);
             this.Controls.Add(this.groupBox1);
             this.Controls.Add(this.menuStrip1);
+            this.Controls.Add(this.Tab_Ajudantes);
             this.DoubleBuffered = true;
             this.Font = new System.Drawing.Font("Arial Narrow", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.ForeColor = System.Drawing.SystemColors.ControlText;
@@ -573,8 +648,6 @@
             this.Load += new System.EventHandler(this.Frm_Veiculo_Load);
             this.groupBox1.ResumeLayout(false);
             this.groupBox1.PerformLayout();
-            this.groupBox2.ResumeLayout(false);
-            this.groupBox2.PerformLayout();
             this.groupBox3.ResumeLayout(false);
             this.groupBox3.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)(this.ultimas_visitas)).EndInit();
@@ -585,6 +658,9 @@
             ((System.ComponentModel.ISupportInitialize)(this.dt_historico)).EndInit();
             this.menuStrip1.ResumeLayout(false);
             this.menuStrip1.PerformLayout();
+            this.Tab_Ajudantes.ResumeLayout(false);
+            this.Tab_Ajudante1.ResumeLayout(false);
+            this.Tab_Ajudante1.PerformLayout();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -593,19 +669,14 @@
         #endregion
 
         private System.Windows.Forms.TextBox txt_NOME;
-        private System.Windows.Forms.TextBox txt_RG_A;
         private System.Windows.Forms.TextBox txt_RG;
         private System.Windows.Forms.TextBox TIPO;
         private System.Windows.Forms.TextBox txt_Placa;
-        private System.Windows.Forms.TextBox txt_NOME_A;
         private System.Windows.Forms.Label lbl_RG;
         private System.Windows.Forms.Label lbl_NOME_MOTORISTA;
-        private System.Windows.Forms.Label lbl_RG2;
-        private System.Windows.Forms.Label lbl_AJUDANTE;
         private System.Windows.Forms.Label lbl_PLACA;
         private System.Windows.Forms.Label lbl_TIPO_VEICULO;
         private System.Windows.Forms.GroupBox groupBox1;
-        private System.Windows.Forms.GroupBox groupBox2;
         private System.Windows.Forms.GroupBox groupBox3;
         private System.Windows.Forms.ListBox AGREGADO;
         private System.Windows.Forms.Label label1;
@@ -631,5 +702,15 @@
         private System.Windows.Forms.TextBox txt_cel;
         private System.Windows.Forms.Button btn_rg;
         private System.Windows.Forms.TextBox txt_OBS;
+        private System.Windows.Forms.Label lbl_AJUDANTE;
+        private System.Windows.Forms.Label lbl_RG2;
+        private System.Windows.Forms.TextBox txt_RG_A;
+        private System.Windows.Forms.TextBox txt_NOME_A;
+        private System.Windows.Forms.TabControl Tab_Ajudantes;
+        private System.Windows.Forms.TabPage Tab_Ajudante1;
+        private System.Windows.Forms.Button Btn_AbaAjudante;
+        private System.Windows.Forms.Button FecharAjudante;
+        private System.Windows.Forms.Button Btn_Saida;
+        private System.Windows.Forms.CheckBox OcultarVisitas;
     }
 }

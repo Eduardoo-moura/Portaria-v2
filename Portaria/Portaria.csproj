@@ -252,6 +252,12 @@
     <Compile Include="Frm_Agendamento.Designer.cs">
       <DependentUpon>Frm_Agendamento.cs</DependentUpon>
     </Compile>
+    <Compile Include="Frm_Ajudantes.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Frm_Ajudantes.Designer.cs">
+      <DependentUpon>Frm_Ajudantes.cs</DependentUpon>
+    </Compile>
     <Compile Include="Frm_Cadastro.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -274,6 +280,9 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <EmbeddedResource Include="Frm_Agendamento.resx">
       <DependentUpon>Frm_Agendamento.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Frm_Ajudantes.resx">
+      <DependentUpon>Frm_Ajudantes.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Frm_Cadastro.resx">
       <DependentUpon>Frm_Cadastro.cs</DependentUpon>

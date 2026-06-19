@@ -40,7 +40,7 @@ namespace Portaria
 
 
         }
-
+        
         private static QuestPDF.Infrastructure.IContainer CellHeader(QuestPDF.Infrastructure.IContainer container) => container
             .Padding(1)
             .Background("#E0E0E0")
@@ -74,8 +74,8 @@ namespace Portaria
                     con.Open(); // 🔴 OBRIGATÓRIO
 
                     string sql = @"
-                    SELECT CPF, NOME, CELULAR, CPFAJUDANTE , NOMEAJUDANTE, DATAHORA,
-                    PLACA, PRESTADOR, AGREGADO, EMPRESA
+                    SELECT CPF, NOME, CELULAR, CPFAJUDANTE , NOMEAJUDANTE, DATAHORA, SAIDA,
+                    PLACA, PRESTADOR, EMPRESA
                     FROM VEICULO
                     WHERE datetime(DATAHORA) >= datetime(@INI)
                     AND datetime(DATAHORA) < datetime(@FIM)
@@ -121,9 +121,10 @@ namespace Portaria
                 row["CPFAJUDANTE"]?.ToString() ?? "",
                 row["NOMEAJUDANTE"]?.ToString() ?? "",
                 dataFormatada,
+                row["SAIDA"]?.ToString() ?? "",
                 row["PLACA"]?.ToString() ?? "",
                 row["PRESTADOR"]?.ToString() ?? "",
-                row["AGREGADO"]?.ToString() ?? "",
+                //row["AGREGADO"]?.ToString() ?? "",
                 row["EMPRESA"]?.ToString() ?? ""
                 });
             }
@@ -162,10 +163,11 @@ namespace Portaria
                             header.Cell().Element(CellHeader).Text("CELULAR").SemiBold();
                             header.Cell().Element(CellHeader).Text("CPF AJUDANTE").SemiBold();
                             header.Cell().Element(CellHeader).Text("NOME AJUDANTE").SemiBold();
-                            header.Cell().Element(CellHeader).Text("DATA/HORA").SemiBold();
+                            header.Cell().Element(CellHeader).Text("ENTRADA").SemiBold();
+                            header.Cell().Element(CellHeader).Text("SAÍDA").SemiBold();
                             header.Cell().Element(CellHeader).Text("PLACA").SemiBold();
                             header.Cell().Element(CellHeader).Text("PRESTADOR").SemiBold();
-                            header.Cell().Element(CellHeader).Text("AGREGADO").SemiBold();
+                            //header.Cell().Element(CellHeader).Text("AGREGADO").SemiBold();
                             header.Cell().Element(CellHeader).Text("EMPRESA").SemiBold();
                         });
 

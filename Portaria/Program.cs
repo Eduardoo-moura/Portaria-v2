@@ -25,7 +25,7 @@ namespace Portaria
             Application.SetCompatibleTextRenderingDefault(false);
             Application.Run(new Frm_Veiculo());
         }
-        public class Conexao
+        public class conexao
         {
             private SQLiteConnection con = new SQLiteConnection(
                 @"Data Source=ControleAcesso.db;Version=3;");
