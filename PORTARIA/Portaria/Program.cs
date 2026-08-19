@@ -1,12 +1,7 @@
-﻿using Microsoft.Data.Sqlite;
 using QuestPDF.Infrastructure;
 using System;
-using System.Collections.Generic;
 using System.Data;
-using System.Data.SqlClient;
 using System.Data.SQLite;
-using System.Linq;
-using System.Threading.Tasks;
 using System.Windows.Forms;
 
 namespace Portaria
@@ -23,6 +18,28 @@ namespace Portaria
 
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
+
+            // Estrutura do banco (colunas ID/SAIDA em VEICULO) e o cadastro de
+            // usuarios com o admin inicial (admin / admin).
+            try
+            {
+                Banco.GarantirEstrutura();
+                Usuarios.GarantirEstrutura();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Não foi possível preparar o banco de dados: " + ex.Message,
+                    "Erro", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                return;
+            }
+
+            // Sem login validado, o sistema nao abre.
+            using (var login = new Frm_Login())
+            {
+                if (login.ShowDialog() != DialogResult.OK)
+                    return;
+            }
+
             Application.Run(new Frm_Veiculo());
         }
         public class conexao

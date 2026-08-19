@@ -1,27 +1,17 @@
-﻿using DocumentFormat.OpenXml.ExtendedProperties;
-using Microsoft.Data.Sqlite;
 using QuestPDF.Fluent;
 using QuestPDF.Helpers;
-using QuestPDF.Infrastructure;
 using System;
 using System.Collections.Generic;
-using System.ComponentModel;
 using System.Data;
-using System.Data.SqlClient;
 using System.Data.SQLite;
-using System.Diagnostics.Contracts;
-using System.Drawing;
-using System.Globalization;
 using System.IO;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows.Forms;
 
 namespace Portaria
 {
     public partial class Frm_relatorio_data : Form
     {
+        private const int TotalColunas = 10;
 
         public Frm_relatorio_data()
         {
@@ -30,17 +20,20 @@ namespace Portaria
             this.MaximizeBox = false;
             this.MinimizeBox = false; // opcional
 
-            foreach (Control c in this.Controls)
+            AplicarMaiusculas(this);
+        }
+
+        private static void AplicarMaiusculas(Control raiz)
+        {
+            foreach (Control c in raiz.Controls)
             {
                 if (c is TextBox txt)
-                {
                     txt.CharacterCasing = CharacterCasing.Upper;
-                }
+                else if (c.HasChildren)
+                    AplicarMaiusculas(c);
             }
-
-
         }
-        
+
         private static QuestPDF.Infrastructure.IContainer CellHeader(QuestPDF.Infrastructure.IContainer container) => container
             .Padding(1)
             .Background("#E0E0E0")
@@ -102,37 +95,57 @@ namespace Portaria
                 return;
             }
 
-            // O restante do método permanece igual
-            List<string[]> dadosFiltrados = new List<string[]>();
+            // Colunas resolvidas uma vez fora do laco, em vez de por nome a cada linha.
+            DataColumn colCpf = dt.Columns["CPF"];
+            DataColumn colNome = dt.Columns["NOME"];
+            DataColumn colCelular = dt.Columns["CELULAR"];
+            DataColumn colCpfAjudante = dt.Columns["CPFAJUDANTE"];
+            DataColumn colNomeAjudante = dt.Columns["NOMEAJUDANTE"];
+            DataColumn colDataHora = dt.Columns["DataHora"];
+            DataColumn colSaida = dt.Columns["SAIDA"];
+            DataColumn colPlaca = dt.Columns["PLACA"];
+            DataColumn colPrestador = dt.Columns["PRESTADOR"];
+            DataColumn colEmpresa = dt.Columns["EMPRESA"];
+
+            List<string[]> dadosFiltrados = new List<string[]>(dt.Rows.Count);
 
             foreach (DataRow row in dt.Rows)
             {
                 DateTime DataHora;
                 string dataFormatada = "";
 
-                if (DateTime.TryParse(row["DataHora"]?.ToString(), out DataHora))
+                if (DateTime.TryParse(row[colDataHora]?.ToString(), out DataHora))
                     dataFormatada = DataHora.ToString("dd/MM/yyyy HH:mm");
 
-                dadosFiltrados.Add(new string[]
+                dadosFiltrados.Add(new string[TotalColunas]
                 {
-                row["CPF"]?.ToString() ?? "",
-                row["NOME"]?.ToString() ?? "",
-                row["CELULAR"]?.ToString() ?? "",
-                row["CPFAJUDANTE"]?.ToString() ?? "",
-                row["NOMEAJUDANTE"]?.ToString() ?? "",
+                row[colCpf]?.ToString() ?? "",
+                row[colNome]?.ToString() ?? "",
+                row[colCelular]?.ToString() ?? "",
+                row[colCpfAjudante]?.ToString() ?? "",
+                row[colNomeAjudante]?.ToString() ?? "",
                 dataFormatada,
-                row["SAIDA"]?.ToString() ?? "",
-                row["PLACA"]?.ToString() ?? "",
-                row["PRESTADOR"]?.ToString() ?? "",
+                row[colSaida]?.ToString() ?? "",
+                row[colPlaca]?.ToString() ?? "",
+                row[colPrestador]?.ToString() ?? "",
                 //row["AGREGADO"]?.ToString() ?? "",
-                row["EMPRESA"]?.ToString() ?? ""
+                row[colEmpresa]?.ToString() ?? ""
                 });
             }
-        
+
             string pdfPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "relatorio.pdf");
 
-            if (File.Exists(pdfPath))
-                File.Delete(pdfPath);
+            try
+            {
+                if (File.Exists(pdfPath))
+                    File.Delete(pdfPath);
+            }
+            catch (IOException)
+            {
+                MessageBox.Show("Feche o relatório que já está aberto e gere novamente.",
+                    "Atenção", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return;
+            }
 
             Document.Create(doc =>
             {
@@ -151,7 +164,7 @@ namespace Portaria
                         // Criar 10 colunas
                         table.ColumnsDefinition(col =>
                         {
-                            for (int i = 0; i < 10; i++)
+                            for (int i = 0; i < TotalColunas; i++)
                                 col.RelativeColumn();
                         });
 
@@ -174,13 +187,8 @@ namespace Portaria
                         // Corpo
                         foreach (var linha in dadosFiltrados)
                         {
-                            var safe = new string[10];
-
-                            for (int i = 0; i < 10; i++)
-                                safe[i] = (i < linha.Length) ? linha[i] : "";
-
-                            for (int i = 0; i < 10; i++)
-                                table.Cell().Element(CellBody).Text(safe[i]);
+                            for (int i = 0; i < TotalColunas; i++)
+                                table.Cell().Element(CellBody).Text(i < linha.Length ? linha[i] : "");
                         }
                     });
 
@@ -191,7 +199,9 @@ namespace Portaria
             })
             .GeneratePdf(pdfPath);
 
-            System.Diagnostics.Process.Start("explorer.exe", pdfPath);
+            // Caminho entre aspas: a pasta do sistema tem espacos no nome e o
+            // explorer.exe abriria o argumento errado sem elas.
+            System.Diagnostics.Process.Start("explorer.exe", "\"" + pdfPath + "\"");
 
         }
 
@@ -210,5 +220,4 @@ namespace Portaria
 
         }
     }
-    
 }

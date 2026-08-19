@@ -67,6 +67,10 @@
             this.menuStrip1 = new System.Windows.Forms.MenuStrip();
             this.Strip_relatorio = new System.Windows.Forms.ToolStripMenuItem();
             this.Relatorio_data = new System.Windows.Forms.ToolStripMenuItem();
+            this.Relatorio_personalizado = new System.Windows.Forms.ToolStripMenuItem();
+            this.Strip_usuarios = new System.Windows.Forms.ToolStripMenuItem();
+            this.Usuarios_cadastrar = new System.Windows.Forms.ToolStripMenuItem();
+            this.lbl_usuario_logado = new System.Windows.Forms.ToolStripLabel();
             this.txt_NOME_A = new System.Windows.Forms.TextBox();
             this.txt_RG_A = new System.Windows.Forms.TextBox();
             this.lbl_RG2 = new System.Windows.Forms.Label();
@@ -458,7 +462,9 @@
             // menuStrip1
             // 
             this.menuStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.Strip_relatorio});
+            this.Strip_relatorio,
+            this.Strip_usuarios,
+            this.lbl_usuario_logado});
             this.menuStrip1.Location = new System.Drawing.Point(0, 0);
             this.menuStrip1.Name = "menuStrip1";
             this.menuStrip1.Size = new System.Drawing.Size(1258, 24);
@@ -469,7 +475,8 @@
             // Strip_relatorio
             // 
             this.Strip_relatorio.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.Relatorio_data});
+            this.Relatorio_data,
+            this.Relatorio_personalizado});
             this.Strip_relatorio.Name = "Strip_relatorio";
             this.Strip_relatorio.Size = new System.Drawing.Size(79, 20);
             this.Strip_relatorio.Text = "RELATORIO";
@@ -481,7 +488,35 @@
             this.Relatorio_data.Size = new System.Drawing.Size(192, 22);
             this.Relatorio_data.Text = "RELATORIO POR DATA";
             this.Relatorio_data.Click += new System.EventHandler(this.Relatorio_data_Click);
-            // 
+            //
+            // Relatorio_personalizado
+            //
+            this.Relatorio_personalizado.Name = "Relatorio_personalizado";
+            this.Relatorio_personalizado.Size = new System.Drawing.Size(192, 22);
+            this.Relatorio_personalizado.Text = "RELATORIO PERSONALIZADO";
+            this.Relatorio_personalizado.Click += new System.EventHandler(this.Relatorio_personalizado_Click);
+            //
+            // Strip_usuarios
+            //
+            this.Strip_usuarios.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.Usuarios_cadastrar});
+            this.Strip_usuarios.Name = "Strip_usuarios";
+            this.Strip_usuarios.Size = new System.Drawing.Size(72, 20);
+            this.Strip_usuarios.Text = "USUARIOS";
+            //
+            // Usuarios_cadastrar
+            //
+            this.Usuarios_cadastrar.Name = "Usuarios_cadastrar";
+            this.Usuarios_cadastrar.Size = new System.Drawing.Size(192, 22);
+            this.Usuarios_cadastrar.Text = "CADASTRO DE USUARIOS";
+            this.Usuarios_cadastrar.Click += new System.EventHandler(this.Usuarios_cadastrar_Click);
+            //
+            // lbl_usuario_logado
+            //
+            this.lbl_usuario_logado.Alignment = System.Windows.Forms.ToolStripItemAlignment.Right;
+            this.lbl_usuario_logado.Name = "lbl_usuario_logado";
+            this.lbl_usuario_logado.Size = new System.Drawing.Size(0, 20);
+            //
             // txt_NOME_A
             // 
             this.txt_NOME_A.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
@@ -698,6 +733,10 @@
         private System.Windows.Forms.MenuStrip menuStrip1;
         private System.Windows.Forms.ToolStripMenuItem Strip_relatorio;
         private System.Windows.Forms.ToolStripMenuItem Relatorio_data;
+        private System.Windows.Forms.ToolStripMenuItem Relatorio_personalizado;
+        private System.Windows.Forms.ToolStripMenuItem Strip_usuarios;
+        private System.Windows.Forms.ToolStripMenuItem Usuarios_cadastrar;
+        private System.Windows.Forms.ToolStripLabel lbl_usuario_logado;
         private System.Windows.Forms.Label lbl_cel;
         private System.Windows.Forms.TextBox txt_cel;
         private System.Windows.Forms.Button btn_rg;

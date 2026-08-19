@@ -1,57 +1,132 @@
-﻿using ClosedXML.Excel;
-using DocumentFormat.OpenXml.Bibliography;
-using DocumentFormat.OpenXml.Office.Word;
-using DocumentFormat.OpenXml.Office2016.Drawing.ChartDrawing;
-using DocumentFormat.OpenXml.Vml.Presentation;
 using System;
 using System.Collections.Generic;
-using System.ComponentModel;
 using System.Data;
-using System.Drawing;
-using System.IO;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Windows.Forms;
 using System.Data.SQLite;
+using System.Drawing;
+using System.Windows.Forms;
 using static Portaria.Program;
-
-
-
-
-
 
 namespace Portaria
 {
     public partial class Frm_Veiculo : Form
     {
-        public Frm_Veiculo()
-        {
-            InitializeComponent();
-            this.FormBorderStyle = FormBorderStyle.FixedSingle;
-            this.MaximizeBox = true;
-            this.MinimizeBox = true; // opcional
+        // Fontes criadas uma unica vez. Antes eram alocadas (e nunca liberadas)
+        // a cada atualizacao de cada grid, vazando handles GDI.
+        private static readonly Font FonteCelula = new Font("Segoe UI", 12);
+        private static readonly Font FonteCabecalhoColuna = new Font("Segoe UI", 12, FontStyle.Bold);
+        private static readonly Font FonteCabecalhoLinha = new Font("Segoe UI", 10, FontStyle.Bold);
+        private static readonly Font FonteUsuarioLogado = new Font("Segoe UI", 9, FontStyle.Bold);
 
-            string conexao = $"Data Source={Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "controleAcesso.db")};Version=3;";
-            string conexaoagenda = $"Data Source={Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "controleAcesso.db")};Version=3;";
-
-
-            foreach (Control c in this.Controls)
-            {
-                if (c is TextBox txt)
-                {
-                    txt.CharacterCasing = CharacterCasing.Upper;
-                }
-            }
-                       
-            
-        }
+        // Visualizacao do "AGENDAMENTO DO DIA" desativada. Para voltar a exibir
+        // a grade, basta trocar para true: a consulta e o codigo continuam aqui.
+        private static readonly bool MostrarAgendamentoDoDia = false;
 
         private readonly string conexao =
         @"Data Source=ControleAcesso.db;";
 
         private readonly string conexaoagenda =
         @"Data Source=ControleAcesso.db;";
+
+        // PLACA so com letras e numeros, em maiusculas. Sem isso a busca por
+        // "GCT6604" nao acha os registros gravados como "GCT 6604".
+        private const string PlacaNormalizada =
+            @"REPLACE(REPLACE(REPLACE(REPLACE(UPPER(IFNULL(PLACA,'')),' ',''),'-',''),'/',''),'.','')";
+
+        public Frm_Veiculo()
+        {
+            InitializeComponent();
+            this.FormBorderStyle = FormBorderStyle.FixedSingle;
+            this.MaximizeBox = true;
+            this.MinimizeBox = true; // opcional
+            this.KeyPreview = true;
+
+            // Maiusculas pela propriedade do proprio controle (inclusive nos que
+            // estao dentro de GroupBox/TabPage), em vez de reescrever o texto a
+            // cada tecla digitada.
+            AplicarMaiusculas(this);
+
+            // Mascara da placa e conferencia do CPF ja na digitacao.
+            Mascaras.AplicarPlaca(txt_Placa);
+            Mascaras.AplicarDocumento(txt_RG);
+            Mascaras.AplicarDocumento(txt_RG_A);
+        }
+
+        private static void AplicarMaiusculas(Control raiz)
+        {
+            foreach (Control c in raiz.Controls)
+            {
+                if (c is TextBox txt)
+                    txt.CharacterCasing = CharacterCasing.Upper;
+                else if (c.HasChildren)
+                    AplicarMaiusculas(c);
+            }
+        }
+
+        private void Frm_Veiculo_Load(object sender, EventArgs e)
+        {
+            AplicarUsuarioLogado();
+
+            // Estilo das grids aplicado uma vez: sobrevive as trocas de DataSource,
+            // portanto nao precisa ser refeito em cada consulta.
+            ConfigurarGrid(ultimas_visitas);
+            ultimas_visitas.DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleLeft;
+            ultimas_visitas.SelectionMode = DataGridViewSelectionMode.FullRowSelect;
+
+            ConfigurarGrid(dt_historico);
+
+            // Agendamento do dia: grade e titulo fora da tela.
+            dtg_agendamento.Visible = MostrarAgendamentoDoDia;
+            Txt_agendamento.Visible = MostrarAgendamentoDoDia;
+
+            if (MostrarAgendamentoDoDia)
+                ConfigurarGrid(dtg_agendamento);
+        }
+
+        /// <summary>
+        /// Mostra o usuario logado na barra de menu e libera o cadastro de
+        /// usuarios apenas para o nivel 1.
+        /// </summary>
+        private void AplicarUsuarioLogado()
+        {
+            UsuarioInfo usuario = Sessao.Atual;
+
+            if (usuario == null)
+            {
+                lbl_usuario_logado.Text = string.Empty;
+                Strip_usuarios.Visible = false;
+                return;
+            }
+
+            lbl_usuario_logado.Font = FonteUsuarioLogado;
+            lbl_usuario_logado.Text = "USUARIO: " + usuario.NomeExibicao;
+            Strip_usuarios.Visible = usuario.PodeCadastrarUsuario;
+        }
+
+        private void Usuarios_cadastrar_Click(object sender, EventArgs e)
+        {
+            // Segunda barreira: o menu fica oculto para o nivel 2, mas a
+            // verificacao tambem e feita aqui.
+            if (Sessao.Atual == null || !Sessao.Atual.PodeCadastrarUsuario)
+            {
+                MessageBox.Show("Seu nível de acesso não permite cadastrar usuários!", "Acesso negado",
+                    MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return;
+            }
+
+            using (Frm_Usuarios f = new Frm_Usuarios())
+            {
+                f.ShowDialog(this);
+            }
+        }
+
+        private static void ConfigurarGrid(DataGridView grid)
+        {
+            grid.ReadOnly = true;
+            grid.DefaultCellStyle.Font = FonteCelula;
+            grid.ColumnHeadersDefaultCellStyle.Font = FonteCabecalhoColuna;
+            grid.RowHeadersDefaultCellStyle.Font = FonteCabecalhoLinha;
+            grid.AlternatingRowsDefaultCellStyle = grid.DefaultCellStyle;
+        }
 
         public void LimparCampo()
         {
@@ -73,60 +148,25 @@ namespace Portaria
                 }
             }
         }
-        
-        
+
         private void txt_RG_TextChanged(object sender, EventArgs e)
         {
-            string txt_RG = Console.ReadLine();
-            TextBox txt = sender as TextBox;
-
-            int pos = txt.SelectionStart; // salva posição do cursor
-            txt.Text = txt.Text.ToUpper();
-            txt.SelectionStart = pos;     // restaura a posição
             AcceptButton = btn_rg;
-
         }
         private void txt_NOME_TextChanged(object sender, EventArgs e)
         {
-            string NOME_MOTORISTA = Console.ReadLine();
-            TextBox txt = sender as TextBox;
-
-            int pos = txt.SelectionStart; // salva posição do cursor
-            txt.Text = txt.Text.ToUpper();
-            txt.SelectionStart = pos;     // restaura a posição
         }
         private void textBox2_TextChanged(object sender, EventArgs e)
         {
-            string RG2 = Console.ReadLine();
-            TextBox txt = sender as TextBox;
-
-            int pos = txt.SelectionStart; // salva posição do cursor
-            txt.Text = txt.Text.ToUpper();
-            txt.SelectionStart = pos;     // restaura a posição
         }
         private void textBox6_TextChanged(object sender, EventArgs e)
         {
-            string NOME_AJUDANTE = Console.ReadLine();
-            TextBox txt = sender as TextBox;
-
-            int pos = txt.SelectionStart; // salva posição do cursor
-            txt.Text = txt.Text.ToUpper();
-            txt.SelectionStart = pos;     // restaura a posição
         }
         private void textBox4_TextChanged(object sender, EventArgs e)
         {
-            string TIPO_VEICULO = Console.ReadLine();
-            TextBox txt = sender as TextBox;
-
-            int pos = txt.SelectionStart; // salva posição do cursor
-            txt.Text = txt.Text.ToUpper();
-            txt.SelectionStart = pos;     // restaura a posição
         }
         private void listBox2_SelectedIndexChanged(object sender, EventArgs e)
         {
-            string AGREGADO = Console.ReadLine();
-            TextBox txt = sender as TextBox;
-
         }
         private void label6_Click(object sender, EventArgs e)
         {
@@ -154,28 +194,13 @@ namespace Portaria
         }
         private void textBox5_TextChanged(object sender, EventArgs e)
         {
-            string Placa = Console.ReadLine();
-            TextBox txt = sender as TextBox;
-
-            int pos = txt.SelectionStart; // salva posição do cursor
-            txt.Text = txt.Text.ToUpper();
-            txt.SelectionStart = pos;     // restaura a posição
-            this.KeyPreview = true;
             AcceptButton = button1;
         }
         private void listBox1_SelectedIndexChanged(object sender, EventArgs e)
         {
-            string PRESTADOR = Console.ReadLine();
         }
         private void textBox1_TextChanged(object sender, EventArgs e)
         {
-            string EMPRESA = Console.ReadLine();
-            TextBox txt = sender as TextBox;
-
-            int pos = txt.SelectionStart; // salva posição do cursor
-            txt.Text = txt.Text.ToUpper();
-            txt.SelectionStart = pos;     // restaura a posição
-            this.KeyPreview = true;
         }
         private void btn_Salvar(object sender, EventArgs e)
         {
@@ -194,14 +219,24 @@ namespace Portaria
                 return;
             }
 
+            // Segunda barreira do CPF: pega o numero que entrou colado ou que veio
+            // de um registro antigo do banco. Mesma regra para motorista e ajudantes.
+            if (!DocumentoAceito(txt_RG, "RG / CPF")) return;
+            if (!DocumentosDosAjudantesAceitos()) return;
+
+            // A placa vai sem separador quando forma uma placa completa; textos
+            // como "S/ PLACA" continuam como o porteiro digitou.
+            string placaMascarada = Placa.Aplicar(txt_Placa.Text);
+            string placa = Placa.Completa(placaMascarada) ? placaMascarada : txt_Placa.Text.Trim();
+
             using (SQLiteConnection conn = new SQLiteConnection(conexao))
             {
                 conn.Open();
                 string sql = @"
                 INSERT INTO Veiculo
-                (CPF, NOME, CELULAR, CPFAJUDANTE, NOMEAJUDANTE, DataHora, SAIDA, PLACA, TIPOVEICULO, PRESTADOR, AGREGADO, EMPRESA)
+                (CPF, NOME, CELULAR, CPFAJUDANTE, NOMEAJUDANTE, DataHora, SAIDA, PLACA, TIPOVEICULO, PRESTADOR, AGREGADO, EMPRESA, USUARIOENTRADA)
                 VALUES
-                (@CPF, @NOME, @CELULAR, @CPFAJUDANTE, @NOMEAJUDANTE, @DataHora, @SAIDA, @PLACA, @TIPOVEICULO, @PRESTADOR, @AGREGADO, @EMPRESA)";
+                (@CPF, @NOME, @CELULAR, @CPFAJUDANTE, @NOMEAJUDANTE, @DataHora, @SAIDA, @PLACA, @TIPOVEICULO, @PRESTADOR, @AGREGADO, @EMPRESA, @USUARIOENTRADA)";
 
                 using (var cmd = new SQLiteCommand(sql, conn))
                 {
@@ -212,35 +247,96 @@ namespace Portaria
                     cmd.Parameters.AddWithValue("@NOMEAJUDANTE", txt_NOME_A.Text);
                     cmd.Parameters.AddWithValue("@DataHora", DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"));
                     cmd.Parameters.AddWithValue("@SAIDA", "");
-                    cmd.Parameters.AddWithValue("@PLACA", txt_Placa.Text);
+                    cmd.Parameters.AddWithValue("@PLACA", placa);
                     cmd.Parameters.AddWithValue("@TIPOVEICULO", TIPO.Text);
                     cmd.Parameters.AddWithValue("@PRESTADOR", PRESTADOR.Text);
                     cmd.Parameters.AddWithValue("@AGREGADO", AGREGADO.Text);
                     cmd.Parameters.AddWithValue("@EMPRESA", txt_OBS.Text.Trim());
+
+                    // Quem registrou a entrada: usado no filtro do relatorio personalizado.
+                    cmd.Parameters.AddWithValue("@USUARIOENTRADA",
+                        Sessao.Atual == null ? "" : Sessao.Atual.Login);
+
                     cmd.ExecuteNonQuery();
                 }
-
-                MessageBox.Show("CADASTRADO!");
-                LimparCampo();
-
-                btn_visitas.PerformClick(); // ← recarrega o DataGrid
-
             }
 
+            // Conexao fechada antes do dialogo: nao mantem o banco travado
+            // enquanto a mensagem estiver aberta na tela.
+            MessageBox.Show("CADASTRADO!");
+            LimparCampo();
+
+            btn_visitas.PerformClick(); // ← recarrega o DataGrid
         }
+        /// <summary>
+        /// Passa a regra do CPF do motorista em todas as abas de ajudante,
+        /// inclusive nas criadas em tempo de execucao.
+        /// </summary>
+        private bool DocumentosDosAjudantesAceitos()
+        {
+            foreach (TabPage aba in Tab_Ajudantes.TabPages)
+            {
+                foreach (Control ctrl in aba.Controls)
+                {
+                    TextBox campo = ctrl as TextBox;
+
+                    if (campo == null || !CampoDeDocumento(campo))
+                        continue;
+
+                    if (DocumentoAceito(campo, "RG / CPF de " + aba.Text))
+                        continue;
+
+                    Tab_Ajudantes.SelectedTab = aba; // mostra a aba onde esta o erro
+                    campo.Focus();
+                    campo.SelectAll();
+                    return false;
+                }
+            }
+
+            return true;
+        }
+
+        /// <summary>Campos de documento das abas: o da aba fixa e os das abas novas.</summary>
+        private static bool CampoDeDocumento(TextBox campo)
+        {
+            return campo.Name == "txt_RG_A"
+                || campo.Name.StartsWith("txtRgAjudante", StringComparison.Ordinal);
+        }
+
+        /// <summary>
+        /// Recusa o campo quando o documento tem 11 digitos (portanto e CPF) e o
+        /// digito verificador nao fecha. RG e documento em branco passam direto.
+        /// </summary>
+        private static bool DocumentoAceito(TextBox campo, string descricao)
+        {
+            string texto = campo.Text.Trim();
+
+            if (!Documento.EhCpf(texto) || Documento.CpfValido(texto))
+                return true;
+
+            MessageBox.Show("O CPF informado em " + descricao + " é inválido: o dígito verificador não confere.",
+                "Atenção", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+
+            campo.Focus();
+            campo.SelectAll();
+            return false;
+        }
+
         private void btn_visitas_Click(object sender, EventArgs e)
         {
             try
             {
+                DataTable dt = new DataTable();
+
                 using (var con = new SQLiteConnection(conexao))
                 {
                     con.Open();
                     string sql = @"
-                    SELECT ID, CPF, NOME, CELULAR, 
-                    CPFAJUDANTE AS 'CPF AJUDANTE', 
-                    NOMEAJUDANTE AS 'NOME AJUDANTE', 
-                    strftime('%d/%m/%Y %H:%M', DataHora) AS 'ENTRADA', 
-                    SAIDA, PLACA, TIPOVEICULO AS 'TIPO VEICULO', 
+                    SELECT ID, CPF, NOME, CELULAR,
+                    CPFAJUDANTE AS 'CPF AJUDANTE',
+                    NOMEAJUDANTE AS 'NOME AJUDANTE',
+                    strftime('%d/%m/%Y %H:%M', DataHora) AS 'ENTRADA',
+                    SAIDA, PLACA, TIPOVEICULO AS 'TIPO VEICULO',
                     PRESTADOR, AGREGADO, EMPRESA
                     FROM Veiculo
                     WHERE DATE(DataHora) = DATE('now')
@@ -249,51 +345,42 @@ namespace Portaria
                     using (var cmd = new SQLiteCommand(sql, con))
                     using (var da = new SQLiteDataAdapter(cmd))
                     {
-                        DataTable dt = new DataTable();
                         da.Fill(dt);
-                        ultimas_visitas.DataSource = dt;
-
-                        // Oculta ID somente se a coluna existir
-                        if (ultimas_visitas.Columns["ID"] != null)
-                            ultimas_visitas.Columns["ID"].Visible = false;
-
-                        ultimas_visitas.ReadOnly = true;
-                        ultimas_visitas.DefaultCellStyle.Font = new Font("Segoe UI", 12);
-                        ultimas_visitas.ColumnHeadersDefaultCellStyle.Font = new Font("Segoe UI", 12, FontStyle.Bold);
-                        ultimas_visitas.RowHeadersDefaultCellStyle.Font = new Font("Segoe UI", 10, FontStyle.Bold);
-                        ultimas_visitas.AlternatingRowsDefaultCellStyle = ultimas_visitas.DefaultCellStyle;
-                        ultimas_visitas.DefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleLeft;
                     }
-
-                    if (OcultarVisitas.Checked = false)
-                    {
-
-                        btn_atualizar.PerformClick();
-                        OcultarVisitas.Checked = false;
-                    }
-                    else
-                    {
-                        btn_atualizar.PerformClick();
-                        OcultarVisitas.Checked = true;
-                    }
-                                        
                 }
+
+                ultimas_visitas.DataSource = dt;
+
+                // Oculta ID somente se a coluna existir
+                if (ultimas_visitas.Columns["ID"] != null)
+                    ultimas_visitas.Columns["ID"].Visible = false;
+
+                // Comportamento preservado: o filtro volta marcado a cada atualizacao.
+                OcultarVisitas.Checked = true;
+                AplicarFiltroVisitas();
+
+                if (MostrarAgendamentoDoDia)
+                    btn_atualizar.PerformClick();
             }
             catch (Exception ex)
             {
                 MessageBox.Show("Erro: " + ex.Message);
             }
-
-            
-
         }
         private void ultimas_visitas_CellContentClick(object sender, DataGridViewCellEventArgs e)
         {
-            ultimas_visitas.SelectionMode = DataGridViewSelectionMode.FullRowSelect;
         }
         private void button1_Click(object sender, EventArgs e)
         {
-            string placaProcurada = txt_Placa.Text.Trim().ToUpper();
+            string placaProcurada = Placa.Normalizar(txt_Placa.Text);
+
+            if (placaProcurada.Length == 0)
+            {
+                MessageBox.Show("Informe a placa para pesquisar.");
+                return;
+            }
+
+            bool encontrado = false;
 
             using (var con = new SQLiteConnection(conexao))
             {
@@ -301,8 +388,9 @@ namespace Portaria
                 string sql = @"
                     SELECT ID, CPF, NOME, CELULAR, CPFAJUDANTE, NOMEAJUDANTE, DataHora, PLACA, TIPOVEICULO, EMPRESA
                     FROM Veiculo
-                    WHERE PLACA = @PLACA
-                    ORDER BY DataHora DESC";
+                    WHERE " + PlacaNormalizada + @" = @PLACA
+                    ORDER BY DataHora DESC
+                    LIMIT 1";
 
                 using (var cmd = new SQLiteCommand(sql, con))
                 {
@@ -312,6 +400,7 @@ namespace Portaria
                     {
                         if (dr.Read())
                         {
+                            encontrado = true;
                             txt_RG.Text = dr["CPF"].ToString();
                             txt_NOME.Text = dr["NOME"].ToString();
                             txt_cel.Text = dr["CELULAR"].ToString();
@@ -319,17 +408,20 @@ namespace Portaria
                             txt_NOME_A.Text = dr["NOMEAJUDANTE"].ToString();
                             TIPO.Text = dr["TIPOVEICULO"].ToString();
                             txt_OBS.Text = dr["EMPRESA"].ToString().Trim();
-
-                            MessageBox.Show("Registro encontrado!");
-                            att_historico.PerformClick();
-                        }
-                        else
-                        {
-                            MessageBox.Show("Placa não encontrada!");
-                            LimparCampo();
                         }
                     }
                 }
+            }
+
+            if (encontrado)
+            {
+                MessageBox.Show("Registro encontrado!");
+                att_historico.PerformClick();
+            }
+            else
+            {
+                MessageBox.Show("Placa não encontrada!");
+                LimparCampo();
             }
         }
         private void label3_Click(object sender, EventArgs e)
@@ -342,7 +434,8 @@ namespace Portaria
         }
         private void btn_atualizar_Click(object sender, EventArgs e)
         {
-            string conexaoagenda = @"Data Source=ControleAcesso.db";
+            if (!MostrarAgendamentoDoDia)
+                return;
 
             DateTime hojeInicio = DateTime.Today;
             DateTime hojeFim = DateTime.Today.AddDays(1).AddSeconds(-1);
@@ -354,38 +447,30 @@ namespace Portaria
             WHERE datetime(DATAHORA) BETWEEN datetime($inicio) AND datetime($fim)
             ORDER BY DATAHORA DESC";
 
+            DataTable dt = new DataTable();
+
             using (var conn = new SQLiteConnection(conexaoagenda))
             {
                 conn.Open();
 
                 using (var cmd = new SQLiteCommand(sql, conn))
                 {
-                    cmd.Parameters.AddWithValue("$usuario", Environment.UserName);
                     cmd.Parameters.AddWithValue("$inicio", hojeInicio.ToString("yyyy-MM-dd HH:mm"));
                     cmd.Parameters.AddWithValue("$fim", hojeFim.ToString("yyyy-MM-dd HH:mm"));
 
                     using (var reader = cmd.ExecuteReader())
                     {
-                        DataTable dt = new DataTable();
                         dt.Load(reader);
-                        dtg_agendamento.DataSource = dt;
                     }
                 }
             }
 
-            // 4️⃣ CONFIGURAÇÕES VISUAIS
-            dtg_agendamento.Columns[0].Visible = true;
-            dtg_agendamento.ReadOnly = true;
-            dtg_agendamento.DefaultCellStyle.Font = new Font("Segoe UI", 12);
-            dtg_agendamento.ColumnHeadersDefaultCellStyle.Font = new Font("Segoe UI", 12, FontStyle.Bold);
-            dtg_agendamento.RowHeadersDefaultCellStyle.Font = new Font("Segoe UI", 10, FontStyle.Bold);
-            dtg_agendamento.AlternatingRowsDefaultCellStyle = dtg_agendamento.DefaultCellStyle;
+            dtg_agendamento.DataSource = dt;
         }
         private void time_veiculo_Tick(object sender, EventArgs e)
         {
+            // btn_visitas ja atualiza a agenda ao final; nao precisa do segundo clique.
             btn_visitas.PerformClick(); // auto-clique
-            btn_atualizar.PerformClick(); // auto-clique
-
         }
 
         private void dt_historico_CellContentClick(object sender, DataGridViewCellEventArgs e)
@@ -396,7 +481,7 @@ namespace Portaria
         // Exemplo 4: Corrija o método att_historico_Click:
         private void att_historico_Click(object sender, EventArgs e)
         {
-            string placaFiltro = txt_Placa.Text.Trim().ToUpper();
+            string placaFiltro = Placa.Normalizar(txt_Placa.Text);
             string rgFiltro = txt_RG.Text.Trim().ToUpper();
 
             if (string.IsNullOrEmpty(placaFiltro) && string.IsNullOrEmpty(rgFiltro))
@@ -407,84 +492,76 @@ namespace Portaria
 
             try
             {
+                DataTable dt = new DataTable();
+
                 using (var con = new SQLiteConnection(conexao))
                 {
                     con.Open();
 
-                    string sql;
                     using (var cmd = new SQLiteCommand(con))
                     {
                         if (!string.IsNullOrEmpty(placaFiltro))
                         {
-                            sql = @"
-                                SELECT 
+                            cmd.CommandText = @"
+                                SELECT
                                 strftime('%d/%m/%Y %H:%M', DataHora) AS 'ENTRADA', SAIDA
                                 FROM Veiculo
-                                WHERE UPPER(Placa) = $placa
+                                WHERE " + PlacaNormalizada + @" = $placa
                                 ORDER BY DataHora DESC";
 
-                            cmd.CommandText = sql;
                             cmd.Parameters.AddWithValue("$placa", placaFiltro);
                         }
                         else
                         {
-                            sql = @"
-                                SELECT 
+                            cmd.CommandText = @"
+                                SELECT
                                 strftime('%d/%m/%Y %H:%M', DataHora) AS 'ENTRADA', SAIDA
                                 FROM Veiculo
                                 WHERE UPPER(CPF) = $CPF
                                 ORDER BY DataHora DESC";
 
-                            cmd.CommandText = sql;
                             cmd.Parameters.AddWithValue("$CPF", rgFiltro);
                         }
 
-                        DataTable dt = new DataTable();
                         using (var reader = cmd.ExecuteReader())
                         {
                             dt.Load(reader);
                         }
-                        if (dt.Rows.Count == 0)
-                        {
-                            dt_historico.DataSource = null;
-                            dt_historico.Columns.Clear();
-
-                            MessageBox.Show("Nenhum registro encontrado.");
-                        }
-                        else
-                        {
-                            dt_historico.DataSource = dt;
-                            dt_historico.ReadOnly = true;
-                            dt_historico.DefaultCellStyle.Font = new Font("Segoe UI", 12);
-                            dt_historico.ColumnHeadersDefaultCellStyle.Font = new Font("Segoe UI", 12, FontStyle.Bold);
-                            dt_historico.RowHeadersDefaultCellStyle.Font = new Font("Segoe UI", 10, FontStyle.Bold);
-
-                        }
                     }
+                }
+
+                if (dt.Rows.Count == 0)
+                {
+                    dt_historico.DataSource = null;
+                    dt_historico.Columns.Clear();
+
+                    MessageBox.Show("Nenhum registro encontrado.");
+                }
+                else
+                {
+                    dt_historico.DataSource = dt;
                 }
             }
             catch (Exception ex)
             {
                 MessageBox.Show("Erro: " + ex.Message);
             }
-
-            dt_historico.ReadOnly = true;
-            dt_historico.DefaultCellStyle.Font = new Font("Segoe UI", 12);
-            dt_historico.ColumnHeadersDefaultCellStyle.Font = new Font("Segoe UI", 12, FontStyle.Bold);
-            dt_historico.RowHeadersDefaultCellStyle.Font = new Font("Segoe UI", 10, FontStyle.Bold);
-            dt_historico.AlternatingRowsDefaultCellStyle = dt_historico.DefaultCellStyle;
-
-        }
-
-        private void Frm_Veiculo_Load(object sender, EventArgs e)
-        {
-
         }
 
         private void Relatorio_data_Click(object sender, EventArgs e)
         {
-            Frm_relatorio_data f = new Frm_relatorio_data();
-            f.ShowDialog();
+            using (Frm_relatorio_data f = new Frm_relatorio_data())
+            {
+                f.ShowDialog();
+            }
+        }
+
+        private void Relatorio_personalizado_Click(object sender, EventArgs e)
+        {
+            using (Frm_relatorio_personalizado f = new Frm_relatorio_personalizado())
+            {
+                f.ShowDialog(this);
+            }
         }
 
         private void Strip_relatorio_Click(object sender, EventArgs e)
@@ -504,19 +581,13 @@ namespace Portaria
 
         private void textBox1_TextChanged_1(object sender, EventArgs e)
         {
-            string txt_cel = Console.ReadLine(); // Alterado de int para string
-            TextBox txt = sender as TextBox;
-
-            int pos = txt.SelectionStart; // salva posição do cursor
-            txt.Text = txt.Text.ToUpper();
-            txt.SelectionStart = pos;     // restaura a posição
-            this.KeyPreview = true;
         }
 
         // Exemplo 5: Corrija o método btn_rg_Click:
         private void btn_rg_Click(object sender, EventArgs e)
         {
             string placaCPF = txt_RG.Text.Trim().ToUpper();
+            bool encontrado = false;
 
             using (var con = new SQLiteConnection(conexao))
             {
@@ -525,7 +596,8 @@ namespace Portaria
                     SELECT ID ,CPF, NOME, CELULAR, CPFAJUDANTE, NOMEAJUDANTE, DataHora, PLACA, TIPOVEICULO, EMPRESA
                     FROM Veiculo
                     WHERE @CPF = CPF
-                    ORDER BY DataHora DESC";
+                    ORDER BY DataHora DESC
+                    LIMIT 1";
 
                 using (var cmd = new SQLiteCommand(sql, con))
                 {
@@ -535,6 +607,7 @@ namespace Portaria
                     {
                         if (dr.Read())
                         {
+                            encontrado = true;
                             txt_Placa.Text = dr["PLACA"].ToString();
                             txt_RG.Text = dr["CPF"].ToString();
                             txt_NOME.Text = dr["NOME"].ToString();
@@ -543,30 +616,25 @@ namespace Portaria
                             txt_NOME_A.Text = dr["NOMEAJUDANTE"].ToString();
                             TIPO.Text = dr["TIPOVEICULO"].ToString();
                             txt_OBS.Text = dr["EMPRESA"].ToString().Trim();
-
-                            MessageBox.Show("Registro encontrado!");
-                            att_historico.PerformClick();
-                        }
-                        else
-                        {
-                            MessageBox.Show("Documento não encontrado!");
-                            LimparCampo();
                         }
                     }
                 }
+            }
+
+            if (encontrado)
+            {
+                MessageBox.Show("Registro encontrado!");
+                att_historico.PerformClick();
+            }
+            else
+            {
+                MessageBox.Show("Documento não encontrado!");
+                LimparCampo();
             }
         }
 
         private void textBox1_TextChanged_2(object sender, EventArgs e)
         {
-
-            string EMPRESA = Console.ReadLine();
-            TextBox txt = sender as TextBox;
-
-            int pos = txt.SelectionStart; // salva posição do cursor
-            txt.Text = txt.Text.ToUpper();
-            txt.SelectionStart = pos;     // restaura a posição
-            this.KeyPreview = true;
         }
 
         private void lbl_RG2_Click(object sender, EventArgs e)
@@ -601,6 +669,7 @@ namespace Portaria
                 i++;
 
             TabPage novaAba = new TabPage($"AJUDANTE {i}");
+            novaAba.SuspendLayout();
 
             // === LABEL RG/CPF ===
             Label lblRg = new Label();
@@ -614,6 +683,7 @@ namespace Portaria
             txtRg.Location = new Point(70, 5);
             txtRg.Size = new Size(200, 50);  // ← ajuste conforme o real
             txtRg.CharacterCasing = CharacterCasing.Upper;
+            Mascaras.AplicarDocumento(txtRg);
 
             // === LABEL NOME ===
             Label lblNome = new Label();
@@ -632,6 +702,7 @@ namespace Portaria
             novaAba.Controls.Add(txtRg);
             novaAba.Controls.Add(lblNome);
             novaAba.Controls.Add(txtNome);
+            novaAba.ResumeLayout(false);
 
             Tab_Ajudantes.TabPages.Add(novaAba);
             Tab_Ajudantes.SelectedTab = novaAba;
@@ -647,7 +718,9 @@ namespace Portaria
             // Verifique se há mais de uma aba antes de remover.
             if (Tab_Ajudantes.TabPages.Count > 1)
             {
-                Tab_Ajudantes.TabPages.RemoveAt(Tab_Ajudantes.TabPages.Count - 1);
+                TabPage ultima = Tab_Ajudantes.TabPages[Tab_Ajudantes.TabPages.Count - 1];
+                Tab_Ajudantes.TabPages.Remove(ultima);
+                ultima.Dispose(); // libera os controles da aba removida
             }
         }
 
@@ -716,44 +789,55 @@ namespace Portaria
                 {
                     con.Open();
 
-                    // 1. Cria tabela nova com ID
-                    var sql1 = new SQLiteCommand(@"
-                    CREATE TABLE IF NOT EXISTS Veiculo_Nova (
-                    ID           INTEGER PRIMARY KEY AUTOINCREMENT,
-                    CPF          TEXT,
-                    NOME         TEXT,
-                    CELULAR      TEXT,
-                    CPFAJUDANTE  TEXT,
-                    NOMEAJUDANTE TEXT,
-                    DataHora     TEXT,
-                    SAIDA        TEXT,
-                    PLACA        TEXT,
-                    TIPOVEICULO  TEXT,
-                    PRESTADOR    TEXT,
-                    AGREGADO     TEXT,
-                    EMPRESA      TEXT
-                     )", con);
-                    sql1.ExecuteNonQuery();
+                    // Uma transacao unica para toda a migracao: muito mais rapido
+                    // que quatro commits e nao deixa o banco pela metade em caso de erro.
+                    using (var tran = con.BeginTransaction())
+                    using (var cmd = con.CreateCommand())
+                    {
+                        cmd.Transaction = tran;
 
-                    // 2. Copia dados antigos
-                    var sql2 = new SQLiteCommand(@"
-                    INSERT INTO Veiculo_Nova 
-                    (CPF, NOME, CELULAR, CPFAJUDANTE, NOMEAJUDANTE, DataHora, SAIDA, PLACA, TIPOVEICULO, PRESTADOR, AGREGADO, EMPRESA)
-                    SELECT CPF, NOME, CELULAR, CPFAJUDANTE, NOMEAJUDANTE, DataHora, SAIDA, PLACA, TIPOVEICULO, PRESTADOR, AGREGADO, EMPRESA
-                    FROM Veiculo", con);
-                    sql2.ExecuteNonQuery();
+                        // 1. Cria tabela nova com ID
+                        cmd.CommandText = @"
+                        CREATE TABLE IF NOT EXISTS Veiculo_Nova (
+                        ID           INTEGER PRIMARY KEY AUTOINCREMENT,
+                        CPF          TEXT,
+                        NOME         TEXT,
+                        CELULAR      TEXT,
+                        CPFAJUDANTE  TEXT,
+                        NOMEAJUDANTE TEXT,
+                        DataHora     TEXT,
+                        SAIDA        TEXT,
+                        PLACA        TEXT,
+                        TIPOVEICULO  TEXT,
+                        PRESTADOR    TEXT,
+                        AGREGADO     TEXT,
+                        EMPRESA      TEXT,
+                        USUARIOENTRADA TEXT
+                         )";
+                        cmd.ExecuteNonQuery();
 
-                    // 3. Remove tabela antiga
-                    var sql3 = new SQLiteCommand("DROP TABLE Veiculo", con);
-                    sql3.ExecuteNonQuery();
+                        // 2. Copia dados antigos
+                        cmd.CommandText = @"
+                        INSERT INTO Veiculo_Nova
+                        (CPF, NOME, CELULAR, CPFAJUDANTE, NOMEAJUDANTE, DataHora, SAIDA, PLACA, TIPOVEICULO, PRESTADOR, AGREGADO, EMPRESA, USUARIOENTRADA)
+                        SELECT CPF, NOME, CELULAR, CPFAJUDANTE, NOMEAJUDANTE, DataHora, SAIDA, PLACA, TIPOVEICULO, PRESTADOR, AGREGADO, EMPRESA, USUARIOENTRADA
+                        FROM Veiculo";
+                        cmd.ExecuteNonQuery();
 
-                    // 4. Renomeia
-                    var sql4 = new SQLiteCommand("ALTER TABLE Veiculo_Nova RENAME TO Veiculo", con);
-                    sql4.ExecuteNonQuery();
+                        // 3. Remove tabela antiga
+                        cmd.CommandText = "DROP TABLE Veiculo";
+                        cmd.ExecuteNonQuery();
 
-                    MessageBox.Show("Coluna ID criada com sucesso!", "OK",
-                        MessageBoxButtons.OK, MessageBoxIcon.Information);
+                        // 4. Renomeia
+                        cmd.CommandText = "ALTER TABLE Veiculo_Nova RENAME TO Veiculo";
+                        cmd.ExecuteNonQuery();
+
+                        tran.Commit();
+                    }
                 }
+
+                MessageBox.Show("Coluna ID criada com sucesso!", "OK",
+                    MessageBoxButtons.OK, MessageBoxIcon.Information);
             }
             catch (Exception ex)
             {
@@ -764,16 +848,17 @@ namespace Portaria
 
         private void OcultarVisitas_CheckedChanged(object sender, EventArgs e)
         {
-            var dt = (DataTable)ultimas_visitas.DataSource;
+            AplicarFiltroVisitas();
+        }
 
-            if (OcultarVisitas.Checked)
-            {
-                dt.DefaultView.RowFilter = "SAIDA IS NULL OR SAIDA = ''";
-            }
-            else
-            {
-                dt.DefaultView.RowFilter = null;
-            }
+        private void AplicarFiltroVisitas()
+        {
+            DataTable dt = ultimas_visitas.DataSource as DataTable;
+            if (dt == null) return;
+
+            dt.DefaultView.RowFilter = OcultarVisitas.Checked
+                ? "SAIDA IS NULL OR SAIDA = ''"
+                : string.Empty;
         }
 
         private void menuStrip1_ItemClicked(object sender, ToolStripItemClickedEventArgs e)
@@ -782,4 +867,3 @@ namespace Portaria
         }
     }
 }
-
