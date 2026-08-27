@@ -361,3 +361,16 @@ MigrationBackup/
 
 # Fody - auto-generated XML schema
 FodyWeavers.xsd
+# --- Portaria ---
+# Bancos SQLite: contem nomes, documentos e telefones de pessoas reais.
+# Nunca versionar - o repositorio e publico.
+*.db
+*.db-journal
+*.db-wal
+*.db-shm
+*.sqbpro
+
+# Saida de publicacao ClickOnce: binarios gerados, nao fonte.
+Application Files/
+setup.exe
+*.application
