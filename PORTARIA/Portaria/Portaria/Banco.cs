@@ -27,6 +27,18 @@ namespace Portaria
             new ColunaDestino("CELULAR",      "TEXT", "CELULAR"),
             new ColunaDestino("CPFAJUDANTE",  "TEXT", "CPFAJUDANTE", "CPF AJUDANTE"),
             new ColunaDestino("NOMEAJUDANTE", "TEXT", "NOMEAJUDANTE", "NOME AJUDANTE"),
+
+            // Ajudantes 2 a 5. O ajudante 1 continua em CPFAJUDANTE/NOMEAJUDANTE:
+            // os 22 mil registros antigos e todas as consultas que ja liam essas
+            // duas colunas seguem funcionando sem conversao.
+            new ColunaDestino("CPFAJUDANTE2",  "TEXT", "CPFAJUDANTE2"),
+            new ColunaDestino("NOMEAJUDANTE2", "TEXT", "NOMEAJUDANTE2"),
+            new ColunaDestino("CPFAJUDANTE3",  "TEXT", "CPFAJUDANTE3"),
+            new ColunaDestino("NOMEAJUDANTE3", "TEXT", "NOMEAJUDANTE3"),
+            new ColunaDestino("CPFAJUDANTE4",  "TEXT", "CPFAJUDANTE4"),
+            new ColunaDestino("NOMEAJUDANTE4", "TEXT", "NOMEAJUDANTE4"),
+            new ColunaDestino("CPFAJUDANTE5",  "TEXT", "CPFAJUDANTE5"),
+            new ColunaDestino("NOMEAJUDANTE5", "TEXT", "NOMEAJUDANTE5"),
             new ColunaDestino("DataHora",     "TEXT", "DATAHORA", "DATA / HORA", "DATA/HORA"),
             new ColunaDestino("SAIDA",        "TEXT", "SAIDA", "SAÍDA"),
             new ColunaDestino("PLACA",        "TEXT", "PLACA"),
@@ -58,6 +70,7 @@ namespace Portaria
                 con.Open();
 
                 GarantirAgendamento(con);
+                GarantirMercadoria(con);
                 GarantirVeiculo(con);
             }
         }
@@ -75,6 +88,66 @@ namespace Portaria
                     field5  TEXT
                 )";
                 cmd.ExecuteNonQuery();
+            }
+        }
+
+        /// <summary>
+        /// Colunas da tabela MERCADORIA: os dados da chegada e, quando o
+        /// destinatario retira, quem levou (RETIRADOPOR) com data e hora.
+        /// </summary>
+        private static readonly ColunaDestino[] ColunasMercadoria =
+        {
+            new ColunaDestino("DATAHORA",        "TEXT"),
+            new ColunaDestino("DESTINATARIO",    "TEXT"),
+            new ColunaDestino("EMPRESA",         "TEXT"),
+            new ColunaDestino("ENTREGADOR",      "TEXT"),
+            new ColunaDestino("RECEBEDOR",       "TEXT"),
+            new ColunaDestino("USUARIOREGISTRO", "TEXT"),
+            new ColunaDestino("ENTREGUE",        "TEXT"),
+            new ColunaDestino("RETIRADOPOR",     "TEXT"),
+            new ColunaDestino("DATAENTREGA",     "TEXT"),
+            new ColunaDestino("USUARIOENTREGA",  "TEXT")
+        };
+
+        /// <summary>
+        /// Tabela das mercadorias que chegam na portaria. Uma linha por chegada,
+        /// no mesmo modelo de VEICULO: nao ha cadastro de fornecedor.
+        /// Bancos que ja tenham a tabela recebem apenas as colunas que faltarem.
+        /// </summary>
+        private static void GarantirMercadoria(SQLiteConnection con)
+        {
+            List<string> colunas = Colunas(con, "MERCADORIA");
+
+            if (colunas.Count == 0)
+            {
+                var sql = new System.Text.StringBuilder();
+                sql.Append("CREATE TABLE MERCADORIA (ID INTEGER PRIMARY KEY AUTOINCREMENT");
+
+                foreach (ColunaDestino coluna in ColunasMercadoria)
+                    sql.AppendFormat(", [{0}] {1}", coluna.Nome, coluna.Tipo);
+
+                sql.Append(")");
+
+                using (var cmd = con.CreateCommand())
+                {
+                    cmd.CommandText = sql.ToString();
+                    cmd.ExecuteNonQuery();
+                }
+
+                return;
+            }
+
+            foreach (ColunaDestino coluna in ColunasMercadoria)
+            {
+                if (Contem(colunas, coluna.Nome))
+                    continue;
+
+                using (var cmd = con.CreateCommand())
+                {
+                    cmd.CommandText = string.Format(
+                        "ALTER TABLE MERCADORIA ADD COLUMN [{0}] {1}", coluna.Nome, coluna.Tipo);
+                    cmd.ExecuteNonQuery();
+                }
             }
         }
 

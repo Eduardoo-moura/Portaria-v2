@@ -17,6 +17,51 @@ namespace Portaria
         private static readonly Font FonteCabecalhoLinha = new Font("Segoe UI", 10, FontStyle.Bold);
         private static readonly Font FonteUsuarioLogado = new Font("Segoe UI", 9, FontStyle.Bold);
 
+        // A grade das mercadorias na portaria e estreita: fonte menor que a
+        // das outras para caber CHEGADA, DESTINATARIO e EMPRESA.
+        private static readonly Font FonteMercadoriaCelula = new Font("Segoe UI", 9);
+        private static readonly Font FonteMercadoriaCabecalho = new Font("Segoe UI", 9, FontStyle.Bold);
+
+        // Fonte dos campos das abas de ajudante criadas em tempo de execucao.
+        // Sem ela os campos herdam o tamanho 24 da TabPage e saem gigantes.
+        private static readonly Font FonteCampoAjudante = new Font("Arial Narrow", 12F);
+
+        /// <summary>
+        /// Quantos ajudantes uma entrada comporta. O ajudante 1 fica na aba fixa
+        /// do formulario; do 2 ao 5 as abas sao criadas pelo botao "+".
+        /// </summary>
+        private const int MaxAjudantes = 5;
+
+        /// <summary>
+        /// Por quantos dias um veiculo sem saida continua aparecendo na grade,
+        /// contando o dia de hoje. Sem isso a entrada some na virada do dia e a
+        /// saida nunca mais pode ser registrada, porque o botao SAIDA so age
+        /// sobre a linha selecionada aqui.
+        ///
+        /// O limite existe para a grade nao virar um deposito: pendencia parada
+        /// ha meses nao e operacao do turno, e dar saida nela hoje gravaria uma
+        /// hora de saida falsa.
+        /// </summary>
+        private const int DiasPendenciasNaGrade = 3;
+
+        // Pendencia de dia anterior fica em ambar na grade, para nao se misturar
+        // com o movimento de hoje. A cor de selecao tambem muda: sem isso a linha
+        // selecionada volta ao azul padrao e a marcacao some da vista.
+        private static readonly Color FundoPendencia = Color.FromArgb(255, 242, 204);
+        private static readonly Color TextoPendencia = Color.FromArgb(124, 94, 0);
+        private static readonly Color FundoPendenciaSelecionada = Color.FromArgb(191, 143, 0);
+        private static readonly Color TextoPendenciaSelecionada = Color.White;
+
+        /// <summary>Coluna tecnica que marca a linha vinda de um dia anterior.</summary>
+        private const string ColunaPendencia = "PENDENCIAANTIGA";
+
+        // Troca de turno: item proprio na barra de menu, encostado no nome do
+        // usuario logado. Nao entra em RELATORIO nem em USUARIOS — trocar de
+        // turno nao e emitir relatorio nem cadastrar gente, e o nivel 2, que e
+        // quem mais troca, nem enxerga o menu USUARIOS.
+        private readonly ToolStripMenuItem Item_trocar_usuario =
+            new ToolStripMenuItem("TROCAR USUARIO");
+
         // Visualizacao do "AGENDAMENTO DO DIA" desativada. Para voltar a exibir
         // a grade, basta trocar para true: a consulta e o codigo continuam aqui.
         private static readonly bool MostrarAgendamentoDoDia = false;
@@ -49,6 +94,17 @@ namespace Portaria
             Mascaras.AplicarPlaca(txt_Placa);
             Mascaras.AplicarDocumento(txt_RG);
             Mascaras.AplicarDocumento(txt_RG_A);
+
+            // Alinhado a direita e inserido antes do rotulo do usuario: entre os
+            // itens alinhados a direita, o primeiro da colecao e o que fica mais
+            // a direita, entao o rotulo sai na ponta e o botao logo a esquerda —
+            // "TROCAR USUARIO   USUARIO: FULANO".
+            Item_trocar_usuario.Name = "Item_trocar_usuario";
+            Item_trocar_usuario.Alignment = ToolStripItemAlignment.Right;
+            Item_trocar_usuario.Click += Item_trocar_usuario_Click;
+
+            menuStrip1.Items.Insert(
+                menuStrip1.Items.IndexOf(lbl_usuario_logado) + 1, Item_trocar_usuario);
         }
 
         private static void AplicarMaiusculas(Control raiz)
@@ -80,6 +136,52 @@ namespace Portaria
 
             if (MostrarAgendamentoDoDia)
                 ConfigurarGrid(dtg_agendamento);
+
+            dtg_mercadorias_pendentes.ReadOnly = true;
+            dtg_mercadorias_pendentes.DefaultCellStyle.Font = FonteMercadoriaCelula;
+            dtg_mercadorias_pendentes.ColumnHeadersDefaultCellStyle.Font = FonteMercadoriaCabecalho;
+            dtg_mercadorias_pendentes.AlternatingRowsDefaultCellStyle = dtg_mercadorias_pendentes.DefaultCellStyle;
+            dtg_mercadorias_pendentes.SelectionMode = DataGridViewSelectionMode.FullRowSelect;
+
+            AtualizarMercadoriasPendentes();
+        }
+
+        /// <summary>
+        /// Mercadorias que continuam na portaria esperando o destinatario retirar.
+        /// So chegada, destinatario e empresa: e um lembrete a vista do porteiro,
+        /// o detalhe fica na tela de mercadorias.
+        /// </summary>
+        private void AtualizarMercadoriasPendentes()
+        {
+            try
+            {
+                DataTable dt = new DataTable();
+
+                using (var con = new SQLiteConnection(conexao))
+                {
+                    con.Open();
+                    string sql = @"
+                    SELECT strftime('%d/%m/%Y %H:%M', DATAHORA) AS 'CHEGADA',
+                    DESTINATARIO AS 'DESTINATARIO',
+                    EMPRESA
+                    FROM MERCADORIA
+                    WHERE IFNULL(ENTREGUE,'') <> 'SIM'
+                    ORDER BY DATAHORA DESC, ID DESC";
+
+                    using (var cmd = new SQLiteCommand(sql, con))
+                    using (var da = new SQLiteDataAdapter(cmd))
+                    {
+                        da.Fill(dt);
+                    }
+                }
+
+                dtg_mercadorias_pendentes.DataSource = dt;
+                lbl_mercadorias_pendentes.Text = "MERCADORIAS NA PORTARIA (" + dt.Rows.Count + ")";
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Erro ao carregar as mercadorias na portaria: " + ex.Message);
+            }
         }
 
         /// <summary>
@@ -94,12 +196,90 @@ namespace Portaria
             {
                 lbl_usuario_logado.Text = string.Empty;
                 Strip_usuarios.Visible = false;
+                Item_trocar_usuario.Visible = false;
                 return;
             }
 
             lbl_usuario_logado.Font = FonteUsuarioLogado;
             lbl_usuario_logado.Text = "USUARIO: " + usuario.NomeExibicao;
             Strip_usuarios.Visible = usuario.PodeCadastrarUsuario;
+
+            // A troca de turno serve aos dois niveis: fica sempre a vista.
+            Item_trocar_usuario.Visible = true;
+        }
+
+        private void Item_trocar_usuario_Click(object sender, EventArgs e)
+        {
+            TrocarUsuario();
+        }
+
+        /// <summary>
+        /// Troca de turno sem fechar o sistema. Existe porque USUARIOENTRADA sai
+        /// de Sessao.Atual no momento em que a entrada e gravada: sem trocar o
+        /// usuario, o turno inteiro fica registrado no nome de quem abriu o
+        /// programa de manha.
+        /// </summary>
+        private void TrocarUsuario()
+        {
+            // O que esta digitado e ainda nao foi salvo seria gravado no nome do
+            // porteiro que entra. Melhor descartar de forma explicita do que
+            // atribuir a entrada a quem nao atendeu o veiculo.
+            if (HaDadosNaTela())
+            {
+                DialogResult resposta = MessageBox.Show(
+                    "Há dados digitados que ainda não foram salvos." + Environment.NewLine +
+                    "Trocar de usuário agora descarta esses dados. Continuar?",
+                    "Troca de turno", MessageBoxButtons.YesNo, MessageBoxIcon.Warning);
+
+                if (resposta != DialogResult.Yes)
+                    return;
+            }
+
+            UsuarioInfo anterior = Sessao.Atual;
+
+            using (var login = new Frm_Login())
+            {
+                login.Text = "TROCA DE TURNO";
+                login.StartPosition = FormStartPosition.CenterParent;
+
+                // Cancelar mantem quem ja estava: o sistema nunca fica aberto
+                // sem usuario na sessao.
+                if (login.ShowDialog(this) != DialogResult.OK)
+                    return;
+            }
+
+            LimparCampo();
+
+            // Refaz o menu e o nome na barra: o porteiro que assume pode ter
+            // nivel diferente do que saiu.
+            AplicarUsuarioLogado();
+
+            // Quem assume o turno comeca com a grade e as pendencias atualizadas.
+            btn_visitas.PerformClick();
+
+            string aviso = "Turno de " + Sessao.Atual.NomeExibicao + " iniciado.";
+
+            if (anterior != null)
+                aviso += Environment.NewLine + "Turno anterior: " + anterior.NomeExibicao + ".";
+
+            MessageBox.Show(aviso, "Troca de turno",
+                MessageBoxButtons.OK, MessageBoxIcon.Information);
+        }
+
+        /// <summary>
+        /// Se ha entrada em digitacao na tela. Usado antes da troca de turno,
+        /// para nao descartar em silencio o que o porteiro anterior deixou pela
+        /// metade.
+        /// </summary>
+        private bool HaDadosNaTela()
+        {
+            return txt_Placa.Text.Trim().Length > 0
+                || txt_RG.Text.Trim().Length > 0
+                || txt_NOME.Text.Trim().Length > 0
+                || txt_cel.Text.Trim().Length > 0
+                || txt_OBS.Text.Trim().Length > 0
+                || TIPO.Text.Trim().Length > 0
+                || AjudantesPreenchidos().Count > 0;
         }
 
         private void Usuarios_cadastrar_Click(object sender, EventArgs e)
@@ -117,6 +297,22 @@ namespace Portaria
             {
                 f.ShowDialog(this);
             }
+        }
+
+        /// <summary>
+        /// Abre o registro das mercadorias que chegam na portaria. A tela e modal:
+        /// enquanto ela estiver aberta a entrada de veiculos fica parada, que e o
+        /// comportamento das demais telas do sistema.
+        /// </summary>
+        private void Btn_Mercadorias_Click(object sender, EventArgs e)
+        {
+            using (Frm_Mercadoria f = new Frm_Mercadoria())
+            {
+                f.ShowDialog(this);
+            }
+
+            // O que foi registrado ou entregue la dentro muda a lista daqui.
+            AtualizarMercadoriasPendentes();
         }
 
         private static void ConfigurarGrid(DataGridView grid)
@@ -139,14 +335,218 @@ namespace Portaria
             TIPO.Clear();
             txt_cel.Clear();
 
-            foreach (TabPage tab in Tab_Ajudantes.TabPages)
+            // As abas do 2 ao 5 saem de cena: sobra a aba fixa, ja vazia, como
+            // no estado em que a tela abre.
+            RemoverAbasExtras();
+        }
+
+        // ----- ajudantes -----
+        //
+        // Cada ajudante ocupa um "lugar" de 1 a MaxAjudantes. O lugar 1 e a aba
+        // fixa do formulario (txt_RG_A / txt_NOME_A) e grava em CPFAJUDANTE /
+        // NOMEAJUDANTE; do 2 ao 5 as abas sao criadas em tempo de execucao e
+        // gravam nas colunas numeradas. Os nomes de controle e de coluna sao
+        // derivados do numero do lugar, para tela e banco nao saírem de sincronia.
+
+        private static string NomeCampoRg(int lugar)
+        {
+            return lugar == 1 ? "txt_RG_A" : "txtRgAjudante" + lugar;
+        }
+
+        private static string NomeCampoNome(int lugar)
+        {
+            return lugar == 1 ? "txt_NOME_A" : "txtNomeAjudante" + lugar;
+        }
+
+        private static string ColunaRg(int lugar)
+        {
+            return lugar == 1 ? "CPFAJUDANTE" : "CPFAJUDANTE" + lugar;
+        }
+
+        private static string ColunaNome(int lugar)
+        {
+            return lugar == 1 ? "NOMEAJUDANTE" : "NOMEAJUDANTE" + lugar;
+        }
+
+        /// <summary>Campo de um lugar de ajudante, ou null quando a aba nao existe.</summary>
+        private TextBox CampoAjudante(string nomeDoControle)
+        {
+            foreach (TabPage aba in Tab_Ajudantes.TabPages)
             {
-                foreach (Control ctrl in tab.Controls)
-                {
-                    if (ctrl is TextBox txt)
-                        txt.Clear();
-                }
+                Control[] achados = aba.Controls.Find(nomeDoControle, false);
+
+                if (achados.Length > 0)
+                    return achados[0] as TextBox;
             }
+
+            return null;
+        }
+
+        /// <summary>Aba de um lugar de ajudante, ou null quando ainda nao foi criada.</summary>
+        private TabPage AbaDoAjudante(int lugar)
+        {
+            string nome = NomeCampoRg(lugar);
+
+            foreach (TabPage aba in Tab_Ajudantes.TabPages)
+            {
+                if (aba.Controls.Find(nome, false).Length > 0)
+                    return aba;
+            }
+
+            return null;
+        }
+
+        private static string TextoDe(TextBox campo)
+        {
+            return campo == null ? "" : campo.Text.Trim();
+        }
+
+        /// <summary>
+        /// Os ajudantes preenchidos na tela, na ordem das abas e sem buracos:
+        /// quem deixou a aba 2 em branco e digitou na 3 grava como ajudante 2.
+        /// Assim as colunas do banco sao sempre preenchidas em sequencia.
+        /// </summary>
+        private List<string[]> AjudantesPreenchidos()
+        {
+            var preenchidos = new List<string[]>();
+
+            for (int lugar = 1; lugar <= MaxAjudantes; lugar++)
+            {
+                string documento = TextoDe(CampoAjudante(NomeCampoRg(lugar)));
+                string nome = TextoDe(CampoAjudante(NomeCampoNome(lugar)));
+
+                if (documento.Length == 0 && nome.Length == 0)
+                    continue;
+
+                preenchidos.Add(new string[] { documento, nome });
+            }
+
+            return preenchidos;
+        }
+
+        /// <summary>
+        /// Traz para a tela os ajudantes da visita encontrada: cria as abas que
+        /// faltarem e descarta as que sobrarem, para o formulario mostrar
+        /// exatamente o que esta gravado — nem mais, nem menos.
+        /// </summary>
+        private void CarregarAjudantes(SQLiteDataReader dr)
+        {
+            RemoverAbasExtras();
+
+            for (int lugar = 1; lugar <= MaxAjudantes; lugar++)
+            {
+                string documento = ValorDaColuna(dr, ColunaRg(lugar));
+                string nome = ValorDaColuna(dr, ColunaNome(lugar));
+
+                if (documento.Length == 0 && nome.Length == 0)
+                    continue;
+
+                GarantirAbaAjudante(lugar);
+
+                TextBox campoRg = CampoAjudante(NomeCampoRg(lugar));
+                TextBox campoNome = CampoAjudante(NomeCampoNome(lugar));
+
+                if (campoRg != null)
+                    campoRg.Text = documento;
+
+                if (campoNome != null)
+                    campoNome.Text = nome;
+            }
+
+            if (Tab_Ajudantes.TabPages.Count > 0)
+                Tab_Ajudantes.SelectedIndex = 0;
+        }
+
+        private static string ValorDaColuna(SQLiteDataReader dr, string coluna)
+        {
+            object valor = dr[coluna];
+
+            return valor == null || valor == DBNull.Value ? "" : valor.ToString().Trim();
+        }
+
+        /// <summary>Devolve a aba do lugar informado, criando-a se ainda nao existir.</summary>
+        private TabPage GarantirAbaAjudante(int lugar)
+        {
+            return AbaDoAjudante(lugar) ?? CriarAbaAjudante(lugar);
+        }
+
+        /// <summary>
+        /// Monta uma aba de ajudante com a mesma geometria e a mesma fonte da aba
+        /// fixa, para as abas novas nao destoarem nem estourarem a largura.
+        /// </summary>
+        private TabPage CriarAbaAjudante(int lugar)
+        {
+            TabPage novaAba = new TabPage("AJUDANTE " + lugar);
+            novaAba.UseVisualStyleBackColor = true;
+            novaAba.SuspendLayout();
+
+            Label lblRg = new Label
+            {
+                AutoSize = true,
+                Font = FonteCampoAjudante,
+                Location = new Point(3, 10),
+                Text = "RG / CPF"
+            };
+
+            TextBox txtRg = new TextBox
+            {
+                CharacterCasing = CharacterCasing.Upper,
+                Font = FonteCampoAjudante,
+                Location = new Point(78, 4),
+                Name = NomeCampoRg(lugar),
+                Size = new Size(102, 26)
+            };
+
+            Mascaras.AplicarDocumento(txtRg);
+
+            Label lblNome = new Label
+            {
+                AutoSize = true,
+                Font = FonteCampoAjudante,
+                Location = new Point(6, 42),
+                Text = "NOME"
+            };
+
+            TextBox txtNome = new TextBox
+            {
+                Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right,
+                CharacterCasing = CharacterCasing.Upper,
+                Font = FonteCampoAjudante,
+                Location = new Point(77, 39),
+                Name = NomeCampoNome(lugar),
+                Size = new Size(316, 26)
+            };
+
+            novaAba.Controls.Add(lblRg);
+            novaAba.Controls.Add(txtRg);
+            novaAba.Controls.Add(lblNome);
+            novaAba.Controls.Add(txtNome);
+            novaAba.ResumeLayout(false);
+
+            Tab_Ajudantes.TabPages.Add(novaAba);
+
+            return novaAba;
+        }
+
+        /// <summary>Fecha as abas criadas em tempo de execucao e limpa a aba fixa.</summary>
+        private void RemoverAbasExtras()
+        {
+            for (int i = Tab_Ajudantes.TabPages.Count - 1; i >= 0; i--)
+            {
+                TabPage aba = Tab_Ajudantes.TabPages[i];
+
+                if (aba == Tab_Ajudante1)
+                    continue;
+
+                Tab_Ajudantes.TabPages.Remove(aba);
+                aba.Dispose();
+            }
+
+            txt_RG_A.Clear();
+            txt_NOME_A.Clear();
+
+            if (Tab_Ajudantes.TabPages.Count > 0)
+                Tab_Ajudantes.SelectedIndex = 0;
         }
 
         private void txt_RG_TextChanged(object sender, EventArgs e)
@@ -229,22 +629,49 @@ namespace Portaria
             string placaMascarada = Placa.Aplicar(txt_Placa.Text);
             string placa = Placa.Completa(placaMascarada) ? placaMascarada : txt_Placa.Text.Trim();
 
+            // Os ajudantes digitados nas abas, ja compactados na ordem em que
+            // serao gravados nos lugares 1..MaxAjudantes.
+            List<string[]> ajudantes = AjudantesPreenchidos();
+
             using (SQLiteConnection conn = new SQLiteConnection(conexao))
             {
                 conn.Open();
                 string sql = @"
                 INSERT INTO Veiculo
-                (CPF, NOME, CELULAR, CPFAJUDANTE, NOMEAJUDANTE, DataHora, SAIDA, PLACA, TIPOVEICULO, PRESTADOR, AGREGADO, EMPRESA, USUARIOENTRADA)
+                (CPF, NOME, CELULAR,
+                 CPFAJUDANTE,  NOMEAJUDANTE,
+                 CPFAJUDANTE2, NOMEAJUDANTE2,
+                 CPFAJUDANTE3, NOMEAJUDANTE3,
+                 CPFAJUDANTE4, NOMEAJUDANTE4,
+                 CPFAJUDANTE5, NOMEAJUDANTE5,
+                 DataHora, SAIDA, PLACA, TIPOVEICULO, PRESTADOR, AGREGADO, EMPRESA, USUARIOENTRADA)
                 VALUES
-                (@CPF, @NOME, @CELULAR, @CPFAJUDANTE, @NOMEAJUDANTE, @DataHora, @SAIDA, @PLACA, @TIPOVEICULO, @PRESTADOR, @AGREGADO, @EMPRESA, @USUARIOENTRADA)";
+                (@CPF, @NOME, @CELULAR,
+                 @CPFAJUDANTE1, @NOMEAJUDANTE1,
+                 @CPFAJUDANTE2, @NOMEAJUDANTE2,
+                 @CPFAJUDANTE3, @NOMEAJUDANTE3,
+                 @CPFAJUDANTE4, @NOMEAJUDANTE4,
+                 @CPFAJUDANTE5, @NOMEAJUDANTE5,
+                 @DataHora, @SAIDA, @PLACA, @TIPOVEICULO, @PRESTADOR, @AGREGADO, @EMPRESA, @USUARIOENTRADA)";
 
                 using (var cmd = new SQLiteCommand(sql, conn))
                 {
                     cmd.Parameters.AddWithValue("@CPF", txt_RG.Text);
                     cmd.Parameters.AddWithValue("@NOME", txt_NOME.Text);
                     cmd.Parameters.AddWithValue("@CELULAR", txt_cel.Text);
-                    cmd.Parameters.AddWithValue("@CPFAJUDANTE", txt_RG_A.Text);
-                    cmd.Parameters.AddWithValue("@NOMEAJUDANTE", txt_NOME_A.Text);
+
+                    // Lugares sem ajudante vao em branco, e nao nulos: e o mesmo
+                    // que o sistema sempre gravou quando nao havia ajudante.
+                    for (int lugar = 1; lugar <= MaxAjudantes; lugar++)
+                    {
+                        string[] ajudante = lugar <= ajudantes.Count
+                            ? ajudantes[lugar - 1]
+                            : new string[] { "", "" };
+
+                        cmd.Parameters.AddWithValue("@CPFAJUDANTE" + lugar, ajudante[0]);
+                        cmd.Parameters.AddWithValue("@NOMEAJUDANTE" + lugar, ajudante[1]);
+                    }
+
                     cmd.Parameters.AddWithValue("@DataHora", DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"));
                     cmd.Parameters.AddWithValue("@SAIDA", "");
                     cmd.Parameters.AddWithValue("@PLACA", placa);
@@ -331,20 +758,50 @@ namespace Portaria
                 using (var con = new SQLiteConnection(conexao))
                 {
                     con.Open();
+
+                    // A grade tem duas origens: tudo o que entrou hoje, e o que
+                    // continua sem saida nos ultimos DiasPendenciasNaGrade dias.
+                    // A segunda parte e o que faz o veiculo que pernoita seguir
+                    // alcancavel pelo botao SAIDA depois da virada do turno.
+                    //
+                    // O dia e comparado em hora local. DataHora e gravado com
+                    // DateTime.Now, mas DATE('now') puro devolve a data UTC: no
+                    // horario de Brasilia a data virava as 21h e a grade ficava
+                    // vazia pelo resto da noite.
+                    //
+                    // O teste de DataHora preenchida deixa explicito que as 11 mil
+                    // linhas da importacao antiga — sem data e sem saida — ficam
+                    // de fora. Hoje elas ja cairiam na comparacao de data, porque
+                    // DATE('') e NULL, mas depender disso e fragil: basta alguem
+                    // trocar o >= por uma comparacao de texto para as 11 mil
+                    // entrarem na grade de uma vez.
                     string sql = @"
                     SELECT ID, CPF, NOME, CELULAR,
                     CPFAJUDANTE AS 'CPF AJUDANTE',
                     NOMEAJUDANTE AS 'NOME AJUDANTE',
                     strftime('%d/%m/%Y %H:%M', DataHora) AS 'ENTRADA',
                     SAIDA, PLACA, TIPOVEICULO AS 'TIPO VEICULO',
-                    PRESTADOR, AGREGADO, EMPRESA
+                    PRESTADOR, AGREGADO, EMPRESA,
+                    CASE WHEN DATE(DataHora) < DATE('now', 'localtime')
+                         THEN 'SIM' ELSE '' END AS " + ColunaPendencia + @"
                     FROM Veiculo
-                    WHERE DATE(DataHora) = DATE('now')
+                    WHERE TRIM(IFNULL(DataHora,'')) <> ''
+                      AND (
+                            DATE(DataHora) = DATE('now', 'localtime')
+                            OR (
+                                 TRIM(IFNULL(SAIDA,'')) = ''
+                                 AND DATE(DataHora) >= DATE('now', 'localtime', @DIAS)
+                               )
+                          )
                     ORDER BY DataHora DESC";
 
                     using (var cmd = new SQLiteCommand(sql, con))
                     using (var da = new SQLiteDataAdapter(cmd))
                     {
+                        // -2 dias mais o de hoje fecham os 3 dias de pendencia.
+                        cmd.Parameters.AddWithValue("@DIAS",
+                            "-" + (DiasPendenciasNaGrade - 1) + " days");
+
                         da.Fill(dt);
                     }
                 }
@@ -355,12 +812,18 @@ namespace Portaria
                 if (ultimas_visitas.Columns["ID"] != null)
                     ultimas_visitas.Columns["ID"].Visible = false;
 
+                // Serve so para pintar a linha; a data ja aparece em ENTRADA.
+                if (ultimas_visitas.Columns[ColunaPendencia] != null)
+                    ultimas_visitas.Columns[ColunaPendencia].Visible = false;
+
                 // Comportamento preservado: o filtro volta marcado a cada atualizacao.
                 OcultarVisitas.Checked = true;
                 AplicarFiltroVisitas();
 
                 if (MostrarAgendamentoDoDia)
                     btn_atualizar.PerformClick();
+
+                AtualizarMercadoriasPendentes();
             }
             catch (Exception ex)
             {
@@ -386,7 +849,13 @@ namespace Portaria
             {
                 con.Open();
                 string sql = @"
-                    SELECT ID, CPF, NOME, CELULAR, CPFAJUDANTE, NOMEAJUDANTE, DataHora, PLACA, TIPOVEICULO, EMPRESA
+                    SELECT ID, CPF, NOME, CELULAR,
+                    CPFAJUDANTE,  NOMEAJUDANTE,
+                    CPFAJUDANTE2, NOMEAJUDANTE2,
+                    CPFAJUDANTE3, NOMEAJUDANTE3,
+                    CPFAJUDANTE4, NOMEAJUDANTE4,
+                    CPFAJUDANTE5, NOMEAJUDANTE5,
+                    DataHora, PLACA, TIPOVEICULO, EMPRESA
                     FROM Veiculo
                     WHERE " + PlacaNormalizada + @" = @PLACA
                     ORDER BY DataHora DESC
@@ -404,8 +873,7 @@ namespace Portaria
                             txt_RG.Text = dr["CPF"].ToString();
                             txt_NOME.Text = dr["NOME"].ToString();
                             txt_cel.Text = dr["CELULAR"].ToString();
-                            txt_RG_A.Text = dr["CPFAJUDANTE"].ToString();
-                            txt_NOME_A.Text = dr["NOMEAJUDANTE"].ToString();
+                            CarregarAjudantes(dr);
                             TIPO.Text = dr["TIPOVEICULO"].ToString();
                             txt_OBS.Text = dr["EMPRESA"].ToString().Trim();
                         }
@@ -593,7 +1061,13 @@ namespace Portaria
             {
                 con.Open();
                 string sql = @"
-                    SELECT ID ,CPF, NOME, CELULAR, CPFAJUDANTE, NOMEAJUDANTE, DataHora, PLACA, TIPOVEICULO, EMPRESA
+                    SELECT ID, CPF, NOME, CELULAR,
+                    CPFAJUDANTE,  NOMEAJUDANTE,
+                    CPFAJUDANTE2, NOMEAJUDANTE2,
+                    CPFAJUDANTE3, NOMEAJUDANTE3,
+                    CPFAJUDANTE4, NOMEAJUDANTE4,
+                    CPFAJUDANTE5, NOMEAJUDANTE5,
+                    DataHora, PLACA, TIPOVEICULO, EMPRESA
                     FROM Veiculo
                     WHERE @CPF = CPF
                     ORDER BY DataHora DESC
@@ -612,8 +1086,7 @@ namespace Portaria
                             txt_RG.Text = dr["CPF"].ToString();
                             txt_NOME.Text = dr["NOME"].ToString();
                             txt_cel.Text = dr["CELULAR"].ToString();
-                            txt_RG_A.Text = dr["CPFAJUDANTE"].ToString();
-                            txt_NOME_A.Text = dr["NOMEAJUDANTE"].ToString();
+                            CarregarAjudantes(dr);
                             TIPO.Text = dr["TIPOVEICULO"].ToString();
                             txt_OBS.Text = dr["EMPRESA"].ToString().Trim();
                         }
@@ -651,64 +1124,34 @@ namespace Portaria
         {
 
         }
-        private int contador = 2;
-
         private void Btn_AbaAjudante_Click(object sender, EventArgs e)
         {
-            List<int> numeros = new List<int>();
+            int lugar = ProximoLugarLivre();
 
-            foreach (TabPage tab in Tab_Ajudantes.TabPages)
+            if (lugar == 0)
             {
-                string nome = tab.Text.Replace("AJUDANTE ", "");
-                if (int.TryParse(nome, out int n))
-                    numeros.Add(n);
+                MessageBox.Show(
+                    "Cada entrada registra no máximo " + MaxAjudantes + " ajudantes.",
+                    "Atenção", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return;
             }
 
-            int i = 1;
-            while (numeros.Contains(i))
-                i++;
+            Tab_Ajudantes.SelectedTab = CriarAbaAjudante(lugar);
+        }
 
-            TabPage novaAba = new TabPage($"AJUDANTE {i}");
-            novaAba.SuspendLayout();
+        /// <summary>
+        /// Menor lugar de ajudante ainda sem aba, ou 0 quando os
+        /// <see cref="MaxAjudantes"/> lugares ja estao na tela.
+        /// </summary>
+        private int ProximoLugarLivre()
+        {
+            for (int lugar = 1; lugar <= MaxAjudantes; lugar++)
+            {
+                if (AbaDoAjudante(lugar) == null)
+                    return lugar;
+            }
 
-            // === LABEL RG/CPF ===
-            Label lblRg = new Label();
-            lblRg.Text = "RG / CPF";
-            lblRg.Location = new Point(5, 10);
-            lblRg.AutoSize = true;
-
-            // === TEXTBOX RG/CPF (mesmo tamanho do Ajudante 1) ===
-            TextBox txtRg = new TextBox();
-            txtRg.Name = $"txtRgAjudante{i}";
-            txtRg.Location = new Point(70, 5);
-            txtRg.Size = new Size(200, 50);  // ← ajuste conforme o real
-            txtRg.CharacterCasing = CharacterCasing.Upper;
-            Mascaras.AplicarDocumento(txtRg);
-
-            // === LABEL NOME ===
-            Label lblNome = new Label();
-            lblNome.Text = "NOME";
-            lblNome.Location = new Point(10, 40);
-            lblNome.AutoSize = true;
-
-            // === TEXTBOX NOME (mesmo tamanho do Ajudante 1) ===
-            TextBox txtNome = new TextBox();
-            txtNome.Name = $"txtNomeAjudante{i}";
-            txtNome.Location = new Point(70, 40);
-            txtNome.Size = new Size(600, 50);  // ← ajuste conforme o real
-            txtNome.CharacterCasing = CharacterCasing.Upper;
-
-            novaAba.Controls.Add(lblRg);
-            novaAba.Controls.Add(txtRg);
-            novaAba.Controls.Add(lblNome);
-            novaAba.Controls.Add(txtNome);
-            novaAba.ResumeLayout(false);
-
-            Tab_Ajudantes.TabPages.Add(novaAba);
-            Tab_Ajudantes.SelectedTab = novaAba;
-
-            contador = i + 1;
-
+            return 0;
         }
 
         private void FecharAjudante_Click(object sender, EventArgs e)
@@ -742,8 +1185,15 @@ namespace Portaria
                 return;
             }
 
-            var confirma = MessageBox.Show("Confirmar saída?", "Confirmação",
-                MessageBoxButtons.YesNo, MessageBoxIcon.Question);
+            // A grade agora mistura o movimento de hoje com pendencias de dias
+            // anteriores. Numa pendencia a pergunta diz de quando e o veiculo,
+            // para a saida de hoje nao ser dada na linha errada.
+            var confirma = MessageBox.Show(EhPendenciaAntiga(ultimas_visitas.SelectedRows[0])
+                    ? "Este veículo entrou em " + EntradaDaLinha(ultimas_visitas.SelectedRows[0])
+                      + " e continua sem saída." + Environment.NewLine
+                      + "Registrar a saída agora?"
+                    : "Confirmar saída?",
+                "Confirmação", MessageBoxButtons.YesNo, MessageBoxIcon.Question);
 
             if (confirma != DialogResult.Yes) return;
 
@@ -859,6 +1309,45 @@ namespace Portaria
             dt.DefaultView.RowFilter = OcultarVisitas.Checked
                 ? "SAIDA IS NULL OR SAIDA = ''"
                 : string.Empty;
+
+            // Trocar o filtro refaz as linhas da grade, entao a pintura vem
+            // depois — e nao junto do DataSource, onde seria descartada.
+            PintarPendencias();
+        }
+
+        /// <summary>Se a linha da grade e uma pendencia vinda de um dia anterior.</summary>
+        private static bool EhPendenciaAntiga(DataGridViewRow linha)
+        {
+            DataGridViewCell celula = linha.Cells[ColunaPendencia];
+
+            return celula != null && Convert.ToString(celula.Value) == "SIM";
+        }
+
+        /// <summary>Data e hora de entrada da linha, como ja aparece na grade.</summary>
+        private static string EntradaDaLinha(DataGridViewRow linha)
+        {
+            DataGridViewCell celula = linha.Cells["ENTRADA"];
+
+            return celula == null ? "" : Convert.ToString(celula.Value);
+        }
+
+        /// <summary>
+        /// Deixa em ambar as linhas que entraram em dias anteriores e continuam
+        /// sem saida. Sem isso elas se misturariam ao movimento de hoje, e o
+        /// porteiro daria saida achando que era uma entrada recente.
+        /// </summary>
+        private void PintarPendencias()
+        {
+            foreach (DataGridViewRow linha in ultimas_visitas.Rows)
+            {
+                if (!EhPendenciaAntiga(linha))
+                    continue;
+
+                linha.DefaultCellStyle.BackColor = FundoPendencia;
+                linha.DefaultCellStyle.ForeColor = TextoPendencia;
+                linha.DefaultCellStyle.SelectionBackColor = FundoPendenciaSelecionada;
+                linha.DefaultCellStyle.SelectionForeColor = TextoPendenciaSelecionada;
+            }
         }
 
         private void menuStrip1_ItemClicked(object sender, ToolStripItemClickedEventArgs e)

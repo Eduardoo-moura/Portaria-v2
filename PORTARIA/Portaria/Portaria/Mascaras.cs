@@ -220,6 +220,19 @@ namespace Portaria
             CorNormal[campo] = campo.BackColor;
             campo.KeyPress += Documento_KeyPress;
             campo.TextChanged += Documento_TextChanged;
+
+            // As abas de ajudante sao criadas e descartadas a cada consulta. Sem
+            // soltar a referencia aqui, este dicionario estatico seguraria para
+            // sempre cada campo ja descartado — e, com ele, a aba inteira.
+            campo.Disposed += Documento_Disposed;
+        }
+
+        private static void Documento_Disposed(object sender, EventArgs e)
+        {
+            TextBox campo = sender as TextBox;
+
+            if (campo != null)
+                CorNormal.Remove(campo);
         }
 
         private static void Placa_KeyPress(object sender, KeyPressEventArgs e)

@@ -81,6 +81,9 @@
             this.FecharAjudante = new System.Windows.Forms.Button();
             this.Btn_Saida = new System.Windows.Forms.Button();
             this.OcultarVisitas = new System.Windows.Forms.CheckBox();
+            this.Btn_Mercadorias = new System.Windows.Forms.Button();
+            this.lbl_mercadorias_pendentes = new System.Windows.Forms.Label();
+            this.dtg_mercadorias_pendentes = new System.Windows.Forms.DataGridView();
             this.groupBox1.SuspendLayout();
             this.groupBox3.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.ultimas_visitas)).BeginInit();
@@ -88,6 +91,7 @@
             ((System.ComponentModel.ISupportInitialize)(this.fileSystemWatcher1)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.dtg_agendamento)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.dt_historico)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.dtg_mercadorias_pendentes)).BeginInit();
             this.menuStrip1.SuspendLayout();
             this.Tab_Ajudantes.SuspendLayout();
             this.Tab_Ajudante1.SuspendLayout();
@@ -639,6 +643,43 @@
             this.OcultarVisitas.UseVisualStyleBackColor = true;
             this.OcultarVisitas.CheckedChanged += new System.EventHandler(this.OcultarVisitas_CheckedChanged);
             // 
+            // Btn_Mercadorias
+            // 
+            this.Btn_Mercadorias.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.Btn_Mercadorias.Font = new System.Drawing.Font("Arial Narrow", 16F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.Btn_Mercadorias.Location = new System.Drawing.Point(890, 45);
+            this.Btn_Mercadorias.Name = "Btn_Mercadorias";
+            this.Btn_Mercadorias.Size = new System.Drawing.Size(300, 60);
+            this.Btn_Mercadorias.TabIndex = 39;
+            this.Btn_Mercadorias.Text = "MERCADORIAS";
+            this.Btn_Mercadorias.UseVisualStyleBackColor = true;
+            this.Btn_Mercadorias.Click += new System.EventHandler(this.Btn_Mercadorias_Click);
+            // 
+            // lbl_mercadorias_pendentes
+            // 
+            this.lbl_mercadorias_pendentes.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.lbl_mercadorias_pendentes.AutoSize = true;
+            this.lbl_mercadorias_pendentes.Font = new System.Drawing.Font("Arial Narrow", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.lbl_mercadorias_pendentes.Location = new System.Drawing.Point(890, 112);
+            this.lbl_mercadorias_pendentes.Name = "lbl_mercadorias_pendentes";
+            this.lbl_mercadorias_pendentes.Size = new System.Drawing.Size(186, 20);
+            this.lbl_mercadorias_pendentes.TabIndex = 40;
+            this.lbl_mercadorias_pendentes.Text = "MERCADORIAS NA PORTARIA";
+            // 
+            // dtg_mercadorias_pendentes
+            // 
+            this.dtg_mercadorias_pendentes.AllowUserToAddRows = false;
+            this.dtg_mercadorias_pendentes.AllowUserToDeleteRows = false;
+            this.dtg_mercadorias_pendentes.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.dtg_mercadorias_pendentes.AutoSizeColumnsMode = System.Windows.Forms.DataGridViewAutoSizeColumnsMode.Fill;
+            this.dtg_mercadorias_pendentes.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
+            this.dtg_mercadorias_pendentes.Location = new System.Drawing.Point(890, 136);
+            this.dtg_mercadorias_pendentes.Name = "dtg_mercadorias_pendentes";
+            this.dtg_mercadorias_pendentes.ReadOnly = true;
+            this.dtg_mercadorias_pendentes.RowHeadersVisible = false;
+            this.dtg_mercadorias_pendentes.Size = new System.Drawing.Size(356, 254);
+            this.dtg_mercadorias_pendentes.TabIndex = 41;
+            // 
             // Frm_Veiculo
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(96F, 96F);
@@ -649,6 +690,9 @@
             this.BackColor = System.Drawing.SystemColors.ButtonFace;
             this.BackgroundImageLayout = System.Windows.Forms.ImageLayout.None;
             this.ClientSize = new System.Drawing.Size(1258, 702);
+            this.Controls.Add(this.Btn_Mercadorias);
+            this.Controls.Add(this.lbl_mercadorias_pendentes);
+            this.Controls.Add(this.dtg_mercadorias_pendentes);
             this.Controls.Add(this.OcultarVisitas);
             this.Controls.Add(this.Btn_Saida);
             this.Controls.Add(this.FecharAjudante);
@@ -691,6 +735,7 @@
             ((System.ComponentModel.ISupportInitialize)(this.fileSystemWatcher1)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.dtg_agendamento)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.dt_historico)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.dtg_mercadorias_pendentes)).EndInit();
             this.menuStrip1.ResumeLayout(false);
             this.menuStrip1.PerformLayout();
             this.Tab_Ajudantes.ResumeLayout(false);
@@ -751,5 +796,8 @@
         private System.Windows.Forms.Button FecharAjudante;
         private System.Windows.Forms.Button Btn_Saida;
         private System.Windows.Forms.CheckBox OcultarVisitas;
+        private System.Windows.Forms.Button Btn_Mercadorias;
+        private System.Windows.Forms.Label lbl_mercadorias_pendentes;
+        private System.Windows.Forms.DataGridView dtg_mercadorias_pendentes;
     }
 }
